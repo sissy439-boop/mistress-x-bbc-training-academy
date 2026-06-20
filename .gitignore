@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+*.env
+.env.local
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+*.log
+
+# Build / Temp files
+dist/
+build/
+*.min.js
+*.map
+
+# Vercel / Deployment
+.vercel
+.next/
+
+# Personal / Sensitive
+*.key
+*.pem
+credentials.json
+
+# Ignore everything except the main site files (optional but clean)
+# !index.html
+# !README.md
