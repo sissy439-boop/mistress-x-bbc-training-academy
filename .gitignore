@@ -16,6 +16,8 @@ build/
 
 # Vercel / Deployment
 .vercel
+.vercel/
+deploy-output.txt
 .next/
 
 # Personal / Sensitive
@@ -26,3 +28,5 @@ credentials.json
 # Ignore everything except the main site files (optional but clean)
 # !index.html
 # !README.md
+
+.vercel
