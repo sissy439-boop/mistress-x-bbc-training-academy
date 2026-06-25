@@ -560,6 +560,70 @@
         text-align: center;
     }
 
+    .stream-info-box {
+        background: rgba(255,215,0,0.1);
+        border: 2px solid #ffd700;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 14px;
+        font-size: 0.88em;
+        color: #fff;
+        line-height: 1.5;
+    }
+
+    .stream-info-box strong { color: #ffd700; }
+
+    .broadcast-room {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 2px dashed #ff1493;
+    }
+
+    .broadcast-embed {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        height: 0;
+        background: #000;
+        border: 3px solid #ffd700;
+        border-radius: 12px;
+        overflow: hidden;
+        margin: 12px 0;
+    }
+
+    .broadcast-embed iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    .broadcast-setup {
+        background: rgba(0,0,0,0.5);
+        border: 2px solid #ff1493;
+        border-radius: 12px;
+        padding: 16px;
+        text-align: left;
+        font-size: 0.9em;
+        color: #ffb6c1;
+    }
+
+    .broadcast-setup ol {
+        margin: 10px 0 0 18px;
+        padding: 0;
+    }
+
+    .broadcast-setup li { margin: 8px 0; }
+
+    .broadcast-setup code {
+        background: #1a1a1a;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #ffd700;
+        font-size: 0.9em;
+    }
+
     .stream-viewport.active {
         animation: pulse-glow 2s ease-in-out infinite;
     }
@@ -858,15 +922,20 @@
 <div class="panel stream-exposer" id="streamExposerPanel">
     <div class="live-badge"><span class="live-dot"></span> LIVE STREAM EXPOSER</div>
     <h2>♠️ Public Exposure Cam</h2>
-    <p class="panel-subtitle">Mistress X broadcasts your humiliation to the world. Go live on YOUR camera — browser will ask permission.</p>
-    <p class="stream-permission-note">📷 Requires camera access. Use Chrome/Edge on HTTPS. Allow camera when prompted.</p>
-    <div class="stream-ticker"><span id="streamTicker">♠️ LIVE NOW: locked_clitty_calgary just exposed their cage on cam — 2,847 viewers watching them leak...</span></div>
+    <p class="panel-subtitle">Your webcam preview + Mistress X's real public broadcast room (below).</p>
+    <div class="stream-info-box">
+      <strong>Where does it stream?</strong><br>
+      <strong>Your cam (left)</strong> = local preview only — only YOU see it in your browser. It does <em>not</em> upload to the internet.<br>
+      <strong>Real live audience</strong> = Mistress X's Twitch/YouTube/room embed below — that's where viewers actually watch.
+    </div>
+    <p class="stream-permission-note">📷 Your cam preview needs browser permission. Real broadcasting uses OBS or the Twitch/YouTube app.</p>
+    <div class="stream-ticker"><span id="streamTicker">♠️ Roleplay ticker — connect Twitch/YouTube below for a real public stream...</span></div>
     <div class="stream-layout">
         <div class="stream-viewport" id="streamViewport">
             <div class="stream-offline" id="streamOffline">
                 <p class="glitter-text" style="-webkit-text-fill-color:#ffd700;">Exposure Cam Offline</p>
-                <p>Click Go Live — your webcam becomes Mistress X's public exposure feed.</p>
-                <button class="btn-small" onclick="toggleStream()" style="margin-top:12px;">📷 Go Live on Cam</button>
+                <p>Click for a local cam preview (practice before you stream for real).</p>
+                <button class="btn-small" onclick="toggleStream()" style="margin-top:12px;">📷 Open Cam Preview</button>
             </div>
             <div id="streamLive" style="display:none; position:absolute; inset:0;">
                 <video id="streamWebcam" class="stream-webcam" autoplay playsinline muted></video>
@@ -898,12 +967,19 @@
         <span class="stat-chip">Chat Msgs: <strong id="streamChatCount">0</strong></span>
     </div>
     <div class="btn-row">
-        <button class="btn-small" id="streamToggleBtn" onclick="toggleStream()">📷 Go Live on Cam</button>
+        <button class="btn-small" id="streamToggleBtn" onclick="toggleStream()">📷 Open Cam Preview</button>
         <button class="btn-small" onclick="flipCamera()">🔄 Flip Cam</button>
         <button class="btn-small" onclick="retryWebcam()">Reconnect Cam</button>
         <button class="btn-small" onclick="exposeLive()">🔴 EXPOSE ME LIVE (+300 pts)</button>
         <button class="btn-small" onclick="completeExposureDare()">Complete Dare (+150 pts)</button>
         <button class="btn-small buy-btn" onclick="scrollToPurchase()">Unlock Private Exposer — $19.99</button>
+    </div>
+
+    <div class="broadcast-room">
+        <h2 style="margin-top:0;">📡 Mistress X Public Broadcast Room</h2>
+        <p class="panel-subtitle">This is the REAL live stream — where the internet actually watches.</p>
+        <div id="broadcastEmbed"></div>
+        <div class="btn-row" id="broadcastLinks"></div>
     </div>
 </div>
 
@@ -1082,6 +1158,16 @@ const teaserLines = [
   "Mistress X: 'White boys pay to watch. Black men get to breed.'",
   "Mistress X: 'Beg for denial. That's all you're good for.'"
 ];
+
+// ── REAL LIVE STREAM CONFIG (edit these for your actual broadcast) ──
+const LIVE_STREAM_CONFIG = {
+  platform: "twitch",           // "twitch" or "youtube"
+  twitchChannel: "",            // e.g. "mistressxbbc" — your Twitch username
+  youtubeVideoId: "",           // YouTube LIVE video ID (from watch URL)
+  publicWatchUrl: "",           // Full link viewers open (Twitch/YouTube channel live page)
+  exposureRoomUrl: "",          // Discord stage, Telegram, Whereby — sissies join here to expose
+  siteDomain: "sissy439-boop.github.io"  // Required for Twitch embed on GitHub Pages
+};
 
 const streamScenes = [
   { icon: "🔒", title: "Cage Check Cam", desc: "Sissy_boi_42 trembling on cam — pink cage dripping while chat counts every leak." },
@@ -1673,9 +1759,9 @@ async function startWebcam() {
     cameraActive = true;
     video.style.display = "block";
     document.getElementById("streamScene").style.display = "none";
-    document.getElementById("streamCamBadge").textContent = "YOUR CAM — LIVE";
+    document.getElementById("streamCamBadge").textContent = "LOCAL PREVIEW";
     document.getElementById("streamCaption").textContent =
-      `Mistress X: "There you are, cumrag. Thousands are watching YOUR pathetic face."`;
+      `Mistress X: "That's your preview, cumrag. Stream for REAL via OBS/Twitch below."`;
     return true;
   } catch (err) {
     cameraActive = false;
@@ -1787,7 +1873,7 @@ async function startStream() {
   document.getElementById("streamOffline").style.display = "none";
   document.getElementById("streamLive").style.display = "block";
   document.getElementById("streamViewport").classList.add("active");
-  document.getElementById("streamToggleBtn").textContent = "⏹ Stop Cam";
+  document.getElementById("streamToggleBtn").textContent = "⏹ Close Preview";
   initStreamChat();
   renderStreamViewers();
   updateStreamDuration();
@@ -1828,7 +1914,7 @@ function stopStream() {
   document.getElementById("streamOffline").style.display = "flex";
   document.getElementById("streamLive").style.display = "none";
   document.getElementById("streamViewport").classList.remove("active");
-  document.getElementById("streamToggleBtn").textContent = "📷 Go Live on Cam";
+  document.getElementById("streamToggleBtn").textContent = "📷 Open Cam Preview";
   clearStreamIntervals();
 }
 
@@ -1904,9 +1990,60 @@ async function completeExposureDare() {
   alert("+150 pts! Dare completed on Mistress X's Exposure Cam. Send proof or face punishment.");
 }
 
+function renderBroadcastRoom() {
+  const cfg = LIVE_STREAM_CONFIG;
+  const embedEl = document.getElementById("broadcastEmbed");
+  const linksEl = document.getElementById("broadcastLinks");
+  let embedHtml = "";
+  let linksHtml = "";
+
+  if (cfg.platform === "twitch" && cfg.twitchChannel) {
+    const parents = [cfg.siteDomain, "localhost"].map(p =>
+      `parent=${encodeURIComponent(p)}`).join("&");
+    embedHtml = `<div class="broadcast-embed"><iframe
+      src="https://player.twitch.tv/?channel=${encodeURIComponent(cfg.twitchChannel)}&${parents}&autoplay=false&muted=false"
+      allowfullscreen></iframe></div>
+      <p style="color:#90ee90; font-size:0.9em;"><em>♠️ LIVE on Twitch: @${cfg.twitchChannel}</em></p>`;
+  } else if (cfg.platform === "youtube" && cfg.youtubeVideoId) {
+    embedHtml = `<div class="broadcast-embed"><iframe
+      src="https://www.youtube.com/embed/${encodeURIComponent(cfg.youtubeVideoId)}?autoplay=0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen></iframe></div>
+      <p style="color:#90ee90; font-size:0.9em;"><em>♠️ LIVE on YouTube</em></p>`;
+  } else {
+    embedHtml = `<div class="broadcast-setup">
+      <strong style="color:#ffd700;">No real stream connected yet.</strong>
+      <p>Your cam preview above is <strong>only on your screen</strong>. To stream live to an audience, Mistress X needs to connect a platform:</p>
+      <ol>
+        <li><strong>Twitch (free):</strong> Create a channel → go live with <a href="https://www.twitch.tv/broadcast" target="_blank" rel="noopener" style="color:#ff69b4;">Twitch app or OBS</a></li>
+        <li><strong>YouTube Live:</strong> Go live from phone or <a href="https://studio.youtube.com" target="_blank" rel="noopener" style="color:#ff69b4;">YouTube Studio</a></li>
+        <li><strong>Edit this site:</strong> Open <code>index.html</code> → set <code>LIVE_STREAM_CONFIG</code> → add your <code>twitchChannel</code> or <code>youtubeVideoId</code></li>
+        <li><strong>Sissies expose on cam:</strong> Share a <code>exposureRoomUrl</code> (Discord Stage, Telegram video chat, Whereby room)</li>
+      </ol>
+      <p style="margin-top:12px;">Example config:<br>
+      <code>twitchChannel: "your_twitch_name"</code><br>
+      <code>publicWatchUrl: "https://twitch.tv/your_twitch_name"</code></p>
+    </div>`;
+  }
+
+  if (cfg.publicWatchUrl) {
+    linksHtml += `<a href="${cfg.publicWatchUrl}" target="_blank" rel="noopener"><button class="btn-small buy-btn">▶ Watch Live (Real Audience)</button></a>`;
+  }
+  if (cfg.exposureRoomUrl) {
+    linksHtml += `<a href="${cfg.exposureRoomUrl}" target="_blank" rel="noopener"><button class="btn-small">📷 Join Exposure Room (Cam Required)</button></a>`;
+  }
+  if (cfg.platform === "twitch" && cfg.twitchChannel) {
+    linksHtml += `<a href="https://dashboard.twitch.tv/u/${encodeURIComponent(cfg.twitchChannel)}/stream-manager" target="_blank" rel="noopener"><button class="btn-small">Twitch Dashboard (Go Live)</button></a>`;
+  }
+
+  embedEl.innerHTML = embedHtml;
+  linksEl.innerHTML = linksHtml;
+}
+
 function renderStreamExposer() {
   renderStreamStats();
   renderExposureDare();
+  renderBroadcastRoom();
   updateStreamTicker();
 }
 
