@@ -668,6 +668,41 @@
 
     .discord-steps li { margin: 8px 0; }
 
+    .fansly-panel {
+        background: linear-gradient(135deg, rgba(0,174,239,0.2), rgba(15,15,15,0.95));
+        border: 3px solid #00AEEF;
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+        margin-top: 16px;
+    }
+
+    .fansly-join-btn {
+        background: linear-gradient(90deg, #00AEEF, #0099d6) !important;
+        font-size: 1.1em !important;
+        padding: 14px 26px !important;
+        max-width: 340px !important;
+        margin: 12px auto !important;
+        display: block !important;
+    }
+
+    .platform-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .platform-tag {
+        display: inline-block;
+        font-size: 0.75em;
+        padding: 3px 10px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    .platform-tag.free { background: #5865F2; color: #fff; }
+    .platform-tag.paid { background: #00AEEF; color: #fff; }
+
     .stream-viewport.active {
         animation: pulse-glow 2s ease-in-out infinite;
     }
@@ -970,7 +1005,8 @@
     <div class="stream-info-box">
       <strong>Where does it stream?</strong><br>
       <strong>Your cam (left)</strong> = local preview only — only YOU see it in your browser. It does <em>not</em> upload to the internet.<br>
-      <strong>Real live audience</strong> = Mistress X's <strong>Discord server</strong> below — join voice/video there to expose for real.
+      <strong>Free exposure</strong> = Discord voice/video room below.<br>
+      <strong>Paid live shows</strong> = <strong>Fansly</strong> — subscribers watch Mistress X go live (no embed; opens Fansly).
     </div>
     <p class="stream-permission-note">📷 Your cam preview needs browser permission. Real broadcasting uses OBS or the Twitch/YouTube app.</p>
     <div class="stream-ticker"><span id="streamTicker">♠️ Roleplay ticker — connect Twitch/YouTube below for a real public stream...</span></div>
@@ -1020,8 +1056,8 @@
     </div>
 
     <div class="broadcast-room">
-        <h2 style="margin-top:0;">💜 Mistress X Discord Live Exposure Room</h2>
-        <p class="panel-subtitle">Real live exposure happens on Discord — voice/video with Mistress X and other sissies.</p>
+        <h2 style="margin-top:0;">📡 Live Exposure Platforms</h2>
+        <p class="panel-subtitle">Discord = free cam room. Fansly = paid subscriber live streams &amp; exclusive exposure.</p>
         <div id="broadcastEmbed"></div>
         <div class="btn-row" id="broadcastLinks"></div>
         <div id="discordOwnerSetup"></div>
@@ -1206,10 +1242,12 @@ const teaserLines = [
 
 // ── REAL LIVE STREAM CONFIG (edit these for your actual broadcast) ──
 const LIVE_STREAM_CONFIG = {
-  platform: "discord",          // "discord" | "twitch" | "youtube"
-  discordInviteUrl: "",         // YOUR invite link: https://discord.gg/xxxxxx
+  platform: "discord",          // primary: "discord" | "twitch" | "youtube" | "fansly"
+  discordInviteUrl: "",         // https://discord.gg/xxxxxx
   discordServerName: "Mistress X BBC Training Academy",
   discordChannelName: "Exposure Cam Live",
+  fanslyProfileUrl: "",         // https://fansly.com/YourUsername
+  fanslyUsername: "MistressX",  // display name on Fansly
   twitchChannel: "",
   youtubeVideoId: "",
   publicWatchUrl: "",
@@ -1297,7 +1335,8 @@ const KEYS = {
   exposureDareId: "sissyExposureDareId",
   exposureDareDone: "sissyExposureDareDone",
   lastExposeDate: "sissyLastExposeDate",
-  discordInvite: "mistressDiscordInvite"
+  discordInvite: "mistressDiscordInvite",
+  fanslyProfile: "mistressFanslyProfile"
 };
 
 // ── Storage helpers ───────────────────────────────────────────────
@@ -2003,12 +2042,18 @@ async function exposeLive() {
     return;
   }
   const discordUrl = getDiscordInviteUrl();
-  if (discordUrl) {
-    if (confirm("🔴 EXPOSE LIVE!\n\nYour cam preview is local only. To expose for REAL, join Mistress X's Discord room now.\n\nOpen Discord exposure room?")) {
-      window.open(discordUrl, "_blank", "noopener");
-    }
+  const fanslyUrl = getFanslyProfileUrl();
+  let msg = "🔴 EXPOSE LIVE!\n\nYour cam preview is local only. For REAL exposure:\n";
+  if (discordUrl) msg += "\n• Discord (free) — join voice/video room";
+  if (fanslyUrl) msg += "\n• Fansly (paid) — subscribe & watch Mistress X live";
+  if (!discordUrl && !fanslyUrl) {
+    alert("Cam preview ready. Connect Discord and/or Fansly below for real live exposure.");
   } else {
-    alert("Cam preview ready. Connect your Discord invite link below so sissies can join you for REAL live exposure.");
+    const openDiscord = discordUrl && confirm(msg + "\n\nOpen Discord exposure room?");
+    if (openDiscord) window.open(discordUrl, "_blank", "noopener");
+    else if (fanslyUrl && confirm("Open Fansly for paid subscriber live shows?")) {
+      window.open(fanslyUrl, "_blank", "noopener");
+    }
   }
   document.getElementById("streamCamBadge").textContent = "🔴 EXPOSED LIVE";
   flashExposure();
@@ -2076,51 +2121,111 @@ function joinDiscordExposure() {
   window.open(url, "_blank", "noopener");
 }
 
+function getFanslyProfileUrl() {
+  const saved = localStorage.getItem(KEYS.fanslyProfile);
+  if (saved && saved.includes("fansly.com")) return saved.replace(/\/+$/, "");
+  const cfg = LIVE_STREAM_CONFIG.fanslyProfileUrl;
+  if (cfg && cfg.includes("fansly.com")) return cfg.replace(/\/+$/, "");
+  return "";
+}
+
+function saveFanslyProfile() {
+  const input = document.getElementById("fanslyProfileInput");
+  let url = (input.value || "").trim().replace(/\/+$/, "");
+  if (!url.match(/^https:\/\/fansly\.com\/[A-Za-z0-9_]+/)) {
+    if (url.match(/^[A-Za-z0-9_]+$/)) url = "https://fansly.com/" + url;
+    else {
+      alert("Paste your Fansly profile URL or username.\nExample: https://fansly.com/MistressX");
+      return;
+    }
+  }
+  localStorage.setItem(KEYS.fanslyProfile, url);
+  LIVE_STREAM_CONFIG.fanslyProfileUrl = url;
+  renderBroadcastRoom();
+  alert("Fansly profile saved! Subscribers on THIS browser can open it now.\n\nSend me the link to add it permanently for all visitors.");
+}
+
+function openFanslyLive() {
+  const url = getFanslyProfileUrl();
+  if (!url) {
+    alert("Fansly not connected yet. Mistress X: paste your Fansly profile below.");
+    return;
+  }
+  window.open(url, "_blank", "noopener");
+}
+
+function renderDiscordPanel(cfg, discordUrl) {
+  if (discordUrl) {
+    return `<div class="discord-panel">
+      <span class="platform-tag free">FREE</span>
+      <div class="discord-logo">💜</div>
+      <h3 style="color:#fff; margin:0 0 8px;">${cfg.discordServerName}</h3>
+      <p style="color:#b9bbbe; margin:0;">Join <strong style="color:#ffd700;">${cfg.discordChannelName}</strong> — voice/video exposure with Mistress X.</p>
+      <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 JOIN DISCORD ROOM</button>
+    </div>`;
+  }
+  return `<div class="discord-panel">
+    <span class="platform-tag free">FREE</span>
+    <div class="discord-logo">💜</div>
+    <h3 style="color:#fff;">Discord Exposure Room</h3>
+    <p style="color:#b9bbbe;">Paste your Discord invite below — sissies join voice/video to expose live.</p>
+  </div>`;
+}
+
+function renderFanslyPanel(cfg, fanslyUrl) {
+  const name = cfg.fanslyUsername || "Mistress X";
+  if (fanslyUrl) {
+    return `<div class="fansly-panel">
+      <span class="platform-tag paid">PAID SUBSCRIBERS</span>
+      <h3 style="color:#00AEEF; margin:0 0 8px;">💙 @${name} on Fansly</h3>
+      <p style="color:#b9bbbe; margin:0;">Mistress X goes <strong>live on Fansly</strong> for paying subscribers — exclusive exposure, training &amp; humiliation shows.</p>
+      <p style="font-size:0.85em; color:#ffb6c1; margin:10px 0;">Fansly can't embed here — subscribers watch on Fansly when you're live.</p>
+      <button class="fansly-join-btn buy-btn" onclick="openFanslyLive()">💙 SUBSCRIBE &amp; WATCH LIVE ON FANSLY</button>
+      <a href="https://fansly.com/creator/home" target="_blank" rel="noopener" style="font-size:0.82em; color:#00AEEF;">Mistress X: Creator Dashboard → Go Live</a>
+    </div>`;
+  }
+  return `<div class="fansly-panel">
+    <span class="platform-tag paid">PAID SUBSCRIBERS</span>
+    <h3 style="color:#00AEEF;">💙 Fansly Live Shows</h3>
+    <p style="color:#b9bbbe;">Connect your Fansly for <strong>paid subscriber live streams</strong> — exposure shows, training, exclusive content.</p>
+    <ol class="discord-steps" style="color:#ccc;">
+      <li>Create account at <a href="https://fansly.com" target="_blank" rel="noopener" style="color:#00AEEF;">fansly.com</a></li>
+      <li>Set up creator profile → verify → add subscription tiers</li>
+      <li>Go live from <strong>Creator Dashboard</strong> when ready</li>
+      <li>Paste your profile URL below (e.g. <code>fansly.com/MistressX</code>)</li>
+    </ol>
+  </div>`;
+}
+
 function renderBroadcastRoom() {
   const cfg = LIVE_STREAM_CONFIG;
   const embedEl = document.getElementById("broadcastEmbed");
   const linksEl = document.getElementById("broadcastLinks");
   const setupEl = document.getElementById("discordOwnerSetup");
   const discordUrl = getDiscordInviteUrl();
-  let embedHtml = "";
+  const fanslyUrl = getFanslyProfileUrl();
+  let embedHtml = `<div class="platform-grid">${renderDiscordPanel(cfg, discordUrl)}${renderFanslyPanel(cfg, fanslyUrl)}</div>`;
   let linksHtml = "";
 
-  if (cfg.platform === "discord") {
-    if (discordUrl) {
-      embedHtml = `<div class="discord-panel">
-        <div class="discord-logo">💜</div>
-        <h3 style="color:#fff; margin:0 0 8px;">${cfg.discordServerName}</h3>
-        <p style="color:#b9bbbe; margin:0;">Join <strong style="color:#ffd700;">${cfg.discordChannelName}</strong> — turn on cam &amp; mic to expose live for Mistress X.</p>
-        <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 JOIN DISCORD EXPOSURE ROOM</button>
-        <p style="font-size:0.82em; color:#90ee90;"><em>♠️ Real live room — opens Discord app or browser</em></p>
-      </div>`;
-      linksHtml = `<button class="btn-small discord-join-btn" style="max-width:280px!important;" onclick="joinDiscordExposure()">💜 Open Discord Now</button>`;
-    } else {
-      embedHtml = `<div class="discord-panel">
-        <div class="discord-logo">💜</div>
-        <h3 style="color:#fff;">Connect Your Discord Server</h3>
-        <p style="color:#b9bbbe;">Mistress X — you have Discord. Create a server invite and paste it below so sissies can join your <strong>live exposure room</strong>.</p>
-        <ol class="discord-steps">
-          <li>Open Discord → create a server (or use yours)</li>
-          <li>Create a voice channel: <strong>${cfg.discordChannelName}</strong></li>
-          <li>Right-click channel → <strong>Invite People</strong> → copy link</li>
-          <li>Paste below → click <strong>Save Invite</strong></li>
-          <li>For Stage events: Server Settings → Enable Community → create a <strong>Stage Channel</strong></li>
-        </ol>
-      </div>`;
-    }
-    setupEl.innerHTML = `<div class="broadcast-setup" style="margin-top:16px; border-color:#5865F2;">
-      <strong style="color:#5865F2;">Mistress X — paste your Discord invite link</strong>
-      <input type="url" id="discordInviteInput" class="discord-setup-input" placeholder="https://discord.gg/your-invite-here" value="${discordUrl}">
-      <div class="btn-row">
-        <button class="btn-small" onclick="saveDiscordInvite()">💜 Save Discord Invite</button>
-        <a href="https://discord.com/app" target="_blank" rel="noopener"><button class="btn-small">Open Discord</button></a>
-      </div>
-      <p style="font-size:0.8em; margin-top:10px;">Saved links work on your browser instantly. Send me the link to add it permanently for all visitors.</p>
-    </div>`;
-  } else {
-    setupEl.innerHTML = "";
+  if (discordUrl) {
+    linksHtml += `<button class="btn-small discord-join-btn" style="max-width:220px!important;" onclick="joinDiscordExposure()">💜 Discord</button>`;
   }
+  if (fanslyUrl) {
+    linksHtml += `<button class="btn-small fansly-join-btn" style="max-width:220px!important;" onclick="openFanslyLive()">💙 Fansly Live</button>`;
+  }
+
+  setupEl.innerHTML = `<div class="broadcast-setup" style="margin-top:16px; border-color:#5865F2;">
+      <strong style="color:#5865F2;">💜 Discord invite (free exposure room)</strong>
+      <input type="url" id="discordInviteInput" class="discord-setup-input" placeholder="https://discord.gg/your-invite" value="${discordUrl}">
+      <button class="btn-small" onclick="saveDiscordInvite()">Save Discord</button>
+    </div>
+    <div class="broadcast-setup" style="margin-top:12px; border-color:#00AEEF;">
+      <strong style="color:#00AEEF;">💙 Fansly profile (paid live shows)</strong>
+      <input type="url" id="fanslyProfileInput" class="discord-setup-input" style="border-color:#00AEEF;" placeholder="https://fansly.com/YourUsername" value="${fanslyUrl}">
+      <button class="btn-small" onclick="saveFanslyProfile()">Save Fansly</button>
+      <a href="https://fansly.com/creator/home" target="_blank" rel="noopener"><button class="btn-small">Fansly Creator Dashboard</button></a>
+      <p style="font-size:0.8em; margin-top:10px;">Send me both links to publish permanently for all visitors.</p>
+    </div>`;
 
   if (cfg.platform === "twitch" && cfg.twitchChannel) {
     const parents = [cfg.siteDomain, "localhost"].map(p =>
@@ -2135,18 +2240,12 @@ function renderBroadcastRoom() {
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen></iframe></div>
       <p style="color:#90ee90; font-size:0.9em;"><em>♠️ LIVE on YouTube</em></p>`;
-  } else if (cfg.platform !== "discord") {
-    embedHtml = `<div class="broadcast-setup">
-      <strong style="color:#ffd700;">No Twitch/YouTube stream connected.</strong>
-      <p>Discord is the default exposure platform — set <code>platform: "discord"</code> in config.</p>
-    </div>`;
+  } else if (cfg.platform === "twitch" || cfg.platform === "youtube") {
+    embedHtml = `<div class="platform-grid">${embedHtml}</div>`;
   }
 
   if (cfg.publicWatchUrl) {
     linksHtml += `<a href="${cfg.publicWatchUrl}" target="_blank" rel="noopener"><button class="btn-small buy-btn">▶ Watch Live</button></a>`;
-  }
-  if (discordUrl && cfg.platform !== "discord") {
-    linksHtml += `<button class="btn-small" onclick="joinDiscordExposure()">💜 Join Discord</button>`;
   }
   if (cfg.platform === "twitch" && cfg.twitchChannel) {
     linksHtml += `<a href="https://dashboard.twitch.tv/u/${encodeURIComponent(cfg.twitchChannel)}/stream-manager" target="_blank" rel="noopener"><button class="btn-small">Twitch Dashboard (Go Live)</button></a>`;
