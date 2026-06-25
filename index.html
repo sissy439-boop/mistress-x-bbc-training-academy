@@ -1243,7 +1243,8 @@ const teaserLines = [
 // ── REAL LIVE STREAM CONFIG (edit these for your actual broadcast) ──
 const LIVE_STREAM_CONFIG = {
   platform: "discord",          // primary: "discord" | "twitch" | "youtube" | "fansly"
-  discordInviteUrl: "",         // https://discord.gg/xxxxxx
+  discordInviteUrl: "",         // https://discord.gg/xxxxxx (add when you have server invite)
+  discordUsername: "lunna655",  // Mistress X Discord — add friend / DM for exposure
   discordServerName: "Mistress X BBC Training Academy",
   discordChannelName: "Exposure Cam Live",
   fanslyProfileUrl: "",         // https://fansly.com/YourUsername
@@ -2043,14 +2044,16 @@ async function exposeLive() {
   }
   const discordUrl = getDiscordInviteUrl();
   const fanslyUrl = getFanslyProfileUrl();
+  const discordUser = LIVE_STREAM_CONFIG.discordUsername;
   let msg = "🔴 EXPOSE LIVE!\n\nYour cam preview is local only. For REAL exposure:\n";
-  if (discordUrl) msg += "\n• Discord (free) — join voice/video room";
+  if (discordUrl) msg += "\n• Discord server — join voice/video room";
+  else if (discordUser) msg += `\n• Discord — add @${discordUser} and request live exposure`;
   if (fanslyUrl) msg += "\n• Fansly (paid) — subscribe & watch Mistress X live";
-  if (!discordUrl && !fanslyUrl) {
+  if (!discordUrl && !discordUser && !fanslyUrl) {
     alert("Cam preview ready. Connect Discord and/or Fansly below for real live exposure.");
   } else {
-    const openDiscord = discordUrl && confirm(msg + "\n\nOpen Discord exposure room?");
-    if (openDiscord) window.open(discordUrl, "_blank", "noopener");
+    const openDiscord = (discordUrl || discordUser) && confirm(msg + "\n\nOpen Discord now?");
+    if (openDiscord) joinDiscordExposure();
     else if (fanslyUrl && confirm("Open Fansly for paid subscriber live shows?")) {
       window.open(fanslyUrl, "_blank", "noopener");
     }
@@ -2114,11 +2117,38 @@ function saveDiscordInvite() {
 
 function joinDiscordExposure() {
   const url = getDiscordInviteUrl();
-  if (!url) {
-    alert("Discord not connected yet. Mistress X: paste your invite link in the setup box below.");
+  if (url) {
+    window.open(url, "_blank", "noopener");
     return;
   }
-  window.open(url, "_blank", "noopener");
+  openDiscordProfile();
+}
+
+function copyDiscordUsername() {
+  const user = LIVE_STREAM_CONFIG.discordUsername;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(user).then(() => {
+      alert(`Copied: ${user}\n\nOpen Discord → Add Friend → paste username → request exposure session.`);
+    }).catch(() => alert(`Mistress X Discord username: ${user}`));
+  } else {
+    alert(`Mistress X Discord username: ${user}`);
+  }
+}
+
+function openDiscordProfile() {
+  const user = LIVE_STREAM_CONFIG.discordUsername;
+  window.open("https://discord.com/app", "_blank", "noopener");
+  alert(`Find Mistress X on Discord\n\nUsername: ${user}\n\nAdd Friend → search "${user}" → join voice when invited for live exposure.`);
+}
+
+function discordUserBlock(cfg) {
+  const user = cfg.discordUsername;
+  if (!user) return "";
+  return `<p style="color:#fff; margin:12px 0 8px;">Mistress X Discord: <strong style="color:#ffd700; font-size:1.15em;">@${user}</strong></p>
+    <div class="btn-row" style="margin:0;">
+      <button class="btn-small" onclick="copyDiscordUsername()">📋 Copy Username</button>
+      <button class="btn-small" onclick="openDiscordProfile()">💜 Open Discord</button>
+    </div>`;
 }
 
 function getFanslyProfileUrl() {
@@ -2155,20 +2185,24 @@ function openFanslyLive() {
 }
 
 function renderDiscordPanel(cfg, discordUrl) {
+  const userBlock = discordUserBlock(cfg);
   if (discordUrl) {
     return `<div class="discord-panel">
       <span class="platform-tag free">FREE</span>
       <div class="discord-logo">💜</div>
       <h3 style="color:#fff; margin:0 0 8px;">${cfg.discordServerName}</h3>
-      <p style="color:#b9bbbe; margin:0;">Join <strong style="color:#ffd700;">${cfg.discordChannelName}</strong> — voice/video exposure with Mistress X.</p>
-      <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 JOIN DISCORD ROOM</button>
+      ${userBlock}
+      <p style="color:#b9bbbe; margin:8px 0 0;">Join <strong style="color:#ffd700;">${cfg.discordChannelName}</strong> — voice/video exposure with Mistress X.</p>
+      <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 JOIN DISCORD SERVER</button>
     </div>`;
   }
   return `<div class="discord-panel">
     <span class="platform-tag free">FREE</span>
     <div class="discord-logo">💜</div>
-    <h3 style="color:#fff;">Discord Exposure Room</h3>
-    <p style="color:#b9bbbe;">Paste your Discord invite below — sissies join voice/video to expose live.</p>
+    <h3 style="color:#fff;">Discord Live Exposure</h3>
+    ${userBlock}
+    <p style="color:#b9bbbe; margin-top:10px;">Add <strong>@${cfg.discordUsername}</strong> on Discord for live cam exposure. Server invite link coming soon.</p>
+    <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 FIND MISTRESS X ON DISCORD</button>
   </div>`;
 }
 
@@ -2208,7 +2242,9 @@ function renderBroadcastRoom() {
   let linksHtml = "";
 
   if (discordUrl) {
-    linksHtml += `<button class="btn-small discord-join-btn" style="max-width:220px!important;" onclick="joinDiscordExposure()">💜 Discord</button>`;
+    linksHtml += `<button class="btn-small discord-join-btn" style="max-width:220px!important;" onclick="joinDiscordExposure()">💜 Discord Server</button>`;
+  } else if (cfg.discordUsername) {
+    linksHtml += `<button class="btn-small discord-join-btn" style="max-width:220px!important;" onclick="openDiscordProfile()">💜 @${cfg.discordUsername}</button>`;
   }
   if (fanslyUrl) {
     linksHtml += `<button class="btn-small fansly-join-btn" style="max-width:220px!important;" onclick="openFanslyLive()">💙 Fansly Live</button>`;
