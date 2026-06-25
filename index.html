@@ -1243,7 +1243,9 @@ const teaserLines = [
 // ── REAL LIVE STREAM CONFIG (edit these for your actual broadcast) ──
 const LIVE_STREAM_CONFIG = {
   platform: "discord",          // primary: "discord" | "twitch" | "youtube" | "fansly"
-  discordInviteUrl: "",         // Lunna's Server invite: https://discord.gg/xxxxxx
+  discordInviteUrl: "https://discord.com/channels/1482959738923651084/1482959739615842387",
+  discordServerId: "1482959738923651084",
+  discordChannelId: "1482959739615842387",
   discordUsername: "lunna655",  // Lunna — server owner
   discordServerName: "Lunna's Server",
   discordChannelName: "Exposure Cam Live",
@@ -2094,19 +2096,23 @@ async function completeExposureDare() {
   alert("+150 pts! Dare completed on Mistress X's Exposure Cam. Send proof or face punishment.");
 }
 
+function isValidDiscordUrl(url) {
+  return /^https:\/\/discord\.(gg|com)\//.test(url);
+}
+
 function getDiscordInviteUrl() {
   const saved = localStorage.getItem(KEYS.discordInvite);
-  if (saved && saved.startsWith("https://discord.")) return saved;
+  if (saved && isValidDiscordUrl(saved)) return saved;
   const cfg = LIVE_STREAM_CONFIG.discordInviteUrl;
-  if (cfg && cfg.startsWith("https://discord.")) return cfg;
+  if (cfg && isValidDiscordUrl(cfg)) return cfg;
   return "";
 }
 
 function saveDiscordInvite() {
   const input = document.getElementById("discordInviteInput");
   const url = (input.value || "").trim();
-  if (!url.match(/^https:\/\/discord\.(gg|com)\//)) {
-    alert("Paste a valid Discord invite link.\nExample: https://discord.gg/abc123");
+  if (!isValidDiscordUrl(url)) {
+    alert("Paste a valid Discord link.\nInvite: https://discord.gg/abc123\nChannel: https://discord.com/channels/SERVER/CHANNEL");
     return;
   }
   localStorage.setItem(KEYS.discordInvite, url);
@@ -2193,7 +2199,8 @@ function renderDiscordPanel(cfg, discordUrl) {
       <div class="discord-logo">💜</div>
       <h3 style="color:#fff; margin:0 0 8px;">${cfg.discordServerName}</h3>
       ${userBlock}
-      <p style="color:#b9bbbe; margin:8px 0 0;">Join <strong style="color:#ffd700;">${cfg.discordChannelName}</strong> in Lunna's Server — voice/video live exposure.</p>
+      <p style="color:#b9bbbe; margin:8px 0 0;">Opens <strong style="color:#ffd700;">${cfg.discordChannelName}</strong> in Lunna's Server — voice/video live exposure.</p>
+      <p style="font-size:0.8em; color:#90ee90;"><em>Already in the server? One click. New? Ask @${cfg.discordUsername} for invite.</em></p>
       <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 JOIN LUNNA'S SERVER</button>
     </div>`;
   }
@@ -2254,7 +2261,7 @@ function renderBroadcastRoom() {
   setupEl.innerHTML = `<div class="broadcast-setup" style="margin-top:16px; border-color:#5865F2;">
       <strong style="color:#5865F2;">💜 Lunna's Server invite link</strong>
       <p style="font-size:0.82em; margin:6px 0;">Discord → Lunna's Server → right-click <em>${cfg.discordChannelName}</em> → Invite People → copy link</p>
-      <input type="url" id="discordInviteInput" class="discord-setup-input" placeholder="https://discord.gg/lunnas-server-invite" value="${discordUrl}">
+      <input type="url" id="discordInviteInput" class="discord-setup-input" placeholder="https://discord.gg/... or discord.com/channels/..." value="${discordUrl}">
       <button class="btn-small" onclick="saveDiscordInvite()">Save Lunna's Server Invite</button>
     </div>
     <div class="broadcast-setup" style="margin-top:12px; border-color:#00AEEF;">
