@@ -2100,7 +2100,10 @@ async function completeExposureDare() {
 }
 
 function isValidDiscordUrl(url) {
-  return /^https:\/\/discord\.(gg|com)\//.test(url);
+  if (!/^https:\/\/discord\.(gg|com)\//.test(url)) return false;
+  const channelMatch = url.match(/discord\.com\/channels\/(\d+)\/(\d+)/);
+  if (channelMatch && channelMatch[2].length < 17) return false;
+  return true;
 }
 
 function getDiscordInviteUrl() {
