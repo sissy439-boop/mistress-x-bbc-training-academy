@@ -701,6 +701,7 @@
     }
 
     .platform-tag.free { background: #5865F2; color: #fff; }
+    .platform-tag.private { background: #ff0040; color: #fff; }
     .platform-tag.paid { background: #00AEEF; color: #fff; }
 
     .stream-viewport.active {
@@ -1005,7 +1006,7 @@
     <div class="stream-info-box">
       <strong>Where does it stream?</strong><br>
       <strong>Your cam (left)</strong> = local preview only — only YOU see it in your browser. It does <em>not</em> upload to the internet.<br>
-      <strong>Free exposure</strong> = <strong>Lunna's Server</strong> on Discord (voice/video below).<br>
+      <strong>Private exposure</strong> = <strong>Lunna's Server</strong> — invite + role required (not public).<br>
       <strong>Paid live shows</strong> = <strong>Fansly</strong> — subscribers watch Mistress X go live (no embed; opens Fansly).
     </div>
     <p class="stream-permission-note">📷 Your cam preview needs browser permission. Real broadcasting uses OBS or the Twitch/YouTube app.</p>
@@ -1249,6 +1250,8 @@ const LIVE_STREAM_CONFIG = {
   discordUsername: "lunna655",  // Lunna — server owner
   discordServerName: "Lunna's Server",
   discordChannelName: "Exposure Cam Live",
+  discordChannelPrivate: true,    // private voice — role or invite required
+  discordMemberRole: "Exposure Pet", // role that can see/join private channel
   fanslyProfileUrl: "",         // https://fansly.com/YourUsername
   fanslyUsername: "MistressX",  // display name on Fansly
   twitchChannel: "",
@@ -2122,7 +2125,20 @@ function saveDiscordInvite() {
 }
 
 function joinDiscordExposure() {
+  const cfg = LIVE_STREAM_CONFIG;
   const url = getDiscordInviteUrl();
+  if (cfg.discordChannelPrivate) {
+    const role = cfg.discordMemberRole || "member";
+    const ok = confirm(
+      `🔒 PRIVATE CHANNEL\n\n` +
+      `Exposure Cam is locked in Lunna's Server.\n\n` +
+      `You need:\n` +
+      `1. Server invite from @${cfg.discordUsername}\n` +
+      `2. "${role}" role from Lunna\n\n` +
+      (url ? `Open Discord channel now? (only works if you already have access)` : `DM @${cfg.discordUsername} on Discord to request access.`)
+    );
+    if (!ok) return;
+  }
   if (url) {
     window.open(url, "_blank", "noopener");
     return;
@@ -2193,25 +2209,22 @@ function openFanslyLive() {
 
 function renderDiscordPanel(cfg, discordUrl) {
   const userBlock = discordUserBlock(cfg);
-  if (discordUrl) {
-    return `<div class="discord-panel">
-      <span class="platform-tag free">FREE</span>
-      <div class="discord-logo">💜</div>
-      <h3 style="color:#fff; margin:0 0 8px;">${cfg.discordServerName}</h3>
-      ${userBlock}
-      <p style="color:#b9bbbe; margin:8px 0 0;">Opens <strong style="color:#ffd700;">${cfg.discordChannelName}</strong> in Lunna's Server — voice/video live exposure.</p>
-      <p style="font-size:0.8em; color:#90ee90;"><em>Already in the server? One click. New? Ask @${cfg.discordUsername} for invite.</em></p>
-      <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 JOIN LUNNA'S SERVER</button>
-    </div>`;
-  }
-  return `<div class="discord-panel">
-    <span class="platform-tag free">FREE</span>
+  const tag = cfg.discordChannelPrivate
+    ? `<span class="platform-tag private">🔒 PRIVATE</span>`
+    : `<span class="platform-tag free">FREE</span>`;
+  const privateNote = cfg.discordChannelPrivate
+    ? `<p style="font-size:0.82em; color:#ffb6c1; margin:8px 0 0;"><em>🔒 Private channel — server invite + <strong>${cfg.discordMemberRole || "member"}</strong> role from @${cfg.discordUsername} required.</em></p>`
+    : `<p style="font-size:0.8em; color:#90ee90;"><em>Ask @${cfg.discordUsername} for server invite.</em></p>`;
+  const body = `<div class="discord-panel">
+    ${tag}
     <div class="discord-logo">💜</div>
     <h3 style="color:#fff; margin:0 0 8px;">${cfg.discordServerName}</h3>
     ${userBlock}
-    <p style="color:#b9bbbe; margin-top:10px;">Live exposure happens in <strong>Lunna's Server</strong>. Add <strong>@${cfg.discordUsername}</strong> for an invite, or paste the server link below.</p>
-    <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 JOIN LUNNA'S SERVER</button>
+    <p style="color:#b9bbbe; margin:8px 0 0;"><strong style="color:#ffd700;">${cfg.discordChannelName}</strong> — private voice/video exposure room.</p>
+    ${privateNote}
+    <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 REQUEST ACCESS — LUNNA'S SERVER</button>
   </div>`;
+  return body;
 }
 
 function renderFanslyPanel(cfg, fanslyUrl) {
@@ -2259,10 +2272,18 @@ function renderBroadcastRoom() {
   }
 
   setupEl.innerHTML = `<div class="broadcast-setup" style="margin-top:16px; border-color:#5865F2;">
-      <strong style="color:#5865F2;">💜 Lunna's Server invite link</strong>
-      <p style="font-size:0.82em; margin:6px 0;">Discord → Lunna's Server → right-click <em>${cfg.discordChannelName}</em> → Invite People → copy link</p>
-      <input type="url" id="discordInviteInput" class="discord-setup-input" placeholder="https://discord.gg/... or discord.com/channels/..." value="${discordUrl}">
-      <button class="btn-small" onclick="saveDiscordInvite()">Save Lunna's Server Invite</button>
+      <strong style="color:#5865F2;">🔒 Lunna — make ${cfg.discordChannelName} private (Discord)</strong>
+      <ol class="discord-steps" style="margin-top:8px;">
+        <li>Server Settings → <strong>Roles</strong> → Create <strong>${cfg.discordMemberRole}</strong></li>
+        <li>Right-click <em>${cfg.discordChannelName}</em> → <strong>Edit Channel</strong> → <strong>Permissions</strong></li>
+        <li><strong>@everyone</strong> → red X on <em>View Channel</em> and <em>Connect</em></li>
+        <li>Click <strong>+</strong> → add <strong>${cfg.discordMemberRole}</strong> → green ✓ on View, Connect, Speak, Video</li>
+        <li>Save → channel is private — only that role can enter</li>
+        <li>Give sissies server invite (<code>discord.gg</code>) then assign the role</li>
+      </ol>
+      <strong style="color:#5865F2; display:block; margin-top:14px;">Channel / invite link for site</strong>
+      <input type="url" id="discordInviteInput" class="discord-setup-input" placeholder="https://discord.gg/... (best) or channel link" value="${discordUrl}">
+      <button class="btn-small" onclick="saveDiscordInvite()">Save Link</button>
     </div>
     <div class="broadcast-setup" style="margin-top:12px; border-color:#00AEEF;">
       <strong style="color:#00AEEF;">💙 Fansly profile (paid live shows)</strong>
