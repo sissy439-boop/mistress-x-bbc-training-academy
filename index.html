@@ -1007,7 +1007,7 @@
       <strong>Where does it stream?</strong><br>
       <strong>Your cam (left)</strong> = local preview only — only YOU see it in your browser. It does <em>not</em> upload to the internet.<br>
       <strong>Private exposure</strong> = <strong>Lunna's Server</strong> — invite + role required (not public).<br>
-      <strong>Paid live shows</strong> = <strong>Fansly</strong> — subscribers watch Mistress X go live (no embed; opens Fansly).
+      <strong>Paid live shows</strong> = <strong>Lunna on Fansly</strong> — subscribers watch exclusive live exposure (opens Fansly).
     </div>
     <p class="stream-permission-note">📷 Your cam preview needs browser permission. Real broadcasting uses OBS or the Twitch/YouTube app.</p>
     <div class="stream-ticker"><span id="streamTicker">♠️ Roleplay ticker — connect Twitch/YouTube below for a real public stream...</span></div>
@@ -1058,7 +1058,7 @@
 
     <div class="broadcast-room">
         <h2 style="margin-top:0;">📡 Live Exposure Platforms</h2>
-        <p class="panel-subtitle">Lunna's Server = free cam room. Fansly = paid subscriber live streams &amp; exclusive exposure.</p>
+        <p class="panel-subtitle">Lunna's Server = free private cam. Lunna's Fansly = paid subscriber live exposure.</p>
         <div id="broadcastEmbed"></div>
         <div class="btn-row" id="broadcastLinks"></div>
         <div id="discordOwnerSetup"></div>
@@ -1252,8 +1252,9 @@ const LIVE_STREAM_CONFIG = {
   discordChannelName: "Exposure Cam Live",
   discordChannelPrivate: true,    // private voice — role or invite required
   discordMemberRole: "Exposure Pet", // role that can see/join private channel
-  fanslyProfileUrl: "",         // https://fansly.com/YourUsername
-  fanslyUsername: "MistressX",  // display name on Fansly
+  fanslyProfileUrl: "https://fansly.com/lunna655",
+  fanslyUsername: "lunna655",
+  fanslyDisplayName: "Lunna",
   twitchChannel: "",
   youtubeVideoId: "",
   publicWatchUrl: "",
@@ -2053,13 +2054,13 @@ async function exposeLive() {
   let msg = "🔴 EXPOSE LIVE!\n\nYour cam preview is local only. For REAL exposure:\n";
   if (discordUrl) msg += "\n• Lunna's Server — join Exposure Cam Live voice channel";
   else if (discordUser) msg += `\n• Lunna's Server — add @${discordUser} (Lunna) for server invite`;
-  if (fanslyUrl) msg += "\n• Fansly (paid) — subscribe & watch Mistress X live";
+  if (fanslyUrl) msg += "\n• Lunna's Fansly (paid) — subscribe & watch live exposure";
   if (!discordUrl && !discordUser && !fanslyUrl) {
     alert("Cam preview ready. Connect Discord and/or Fansly below for real live exposure.");
   } else {
     const openDiscord = (discordUrl || discordUser) && confirm(msg + "\n\nOpen Discord now?");
     if (openDiscord) joinDiscordExposure();
-    else if (fanslyUrl && confirm("Open Fansly for paid subscriber live shows?")) {
+    else if (fanslyUrl && confirm("Open Lunna's Fansly for paid subscriber live shows?")) {
       window.open(fanslyUrl, "_blank", "noopener");
     }
   }
@@ -2203,11 +2204,16 @@ function saveFanslyProfile() {
 
 function openFanslyLive() {
   const url = getFanslyProfileUrl();
+  const name = LIVE_STREAM_CONFIG.fanslyDisplayName || LIVE_STREAM_CONFIG.fanslyUsername;
   if (!url) {
-    alert("Fansly not connected yet. Mistress X: paste your Fansly profile below.");
+    alert("Fansly not connected yet. Lunna: paste your Fansly profile below.");
     return;
   }
   window.open(url, "_blank", "noopener");
+}
+
+function openFanslyCreator() {
+  window.open("https://fansly.com/creator/home", "_blank", "noopener");
 }
 
 function renderDiscordPanel(cfg, discordUrl) {
@@ -2231,26 +2237,27 @@ function renderDiscordPanel(cfg, discordUrl) {
 }
 
 function renderFanslyPanel(cfg, fanslyUrl) {
-  const name = cfg.fanslyUsername || "Mistress X";
+  const user = cfg.fanslyUsername || "lunna655";
+  const display = cfg.fanslyDisplayName || "Lunna";
   if (fanslyUrl) {
     return `<div class="fansly-panel">
-      <span class="platform-tag paid">PAID SUBSCRIBERS</span>
-      <h3 style="color:#00AEEF; margin:0 0 8px;">💙 @${name} on Fansly</h3>
-      <p style="color:#b9bbbe; margin:0;">Mistress X goes <strong>live on Fansly</strong> for paying subscribers — exclusive exposure, training &amp; humiliation shows.</p>
-      <p style="font-size:0.85em; color:#ffb6c1; margin:10px 0;">Fansly can't embed here — subscribers watch on Fansly when you're live.</p>
-      <button class="fansly-join-btn buy-btn" onclick="openFanslyLive()">💙 SUBSCRIBE &amp; WATCH LIVE ON FANSLY</button>
-      <a href="https://fansly.com/creator/home" target="_blank" rel="noopener" style="font-size:0.82em; color:#00AEEF;">Mistress X: Creator Dashboard → Go Live</a>
+      <span class="platform-tag paid">💙 PAID LIVE</span>
+      <h3 style="color:#00AEEF; margin:0 0 8px;">${display} · @${user} on Fansly</h3>
+      <p style="color:#b9bbbe; margin:0;">Subscribe for <strong>exclusive live exposure</strong> — Lunna goes live for paying sissies only.</p>
+      <p style="font-size:0.85em; color:#ffb6c1; margin:10px 0;">Fansly streams on Fansly.com — click below when Lunna is live.</p>
+      <button class="fansly-join-btn buy-btn" onclick="openFanslyLive()">💙 SUBSCRIBE — WATCH LUNNA LIVE</button>
+      <button class="btn-small" onclick="openFanslyCreator()" style="margin-top:8px;">Lunna: Go Live (Creator Dashboard)</button>
     </div>`;
   }
   return `<div class="fansly-panel">
-    <span class="platform-tag paid">PAID SUBSCRIBERS</span>
-    <h3 style="color:#00AEEF;">💙 Fansly Live Shows</h3>
-    <p style="color:#b9bbbe;">Connect your Fansly for <strong>paid subscriber live streams</strong> — exposure shows, training, exclusive content.</p>
+    <span class="platform-tag paid">💙 PAID LIVE</span>
+    <h3 style="color:#00AEEF;">Lunna's Fansly</h3>
+    <p style="color:#b9bbbe;">Set up paid subscriber live exposure on Fansly.</p>
     <ol class="discord-steps" style="color:#ccc;">
-      <li>Create account at <a href="https://fansly.com" target="_blank" rel="noopener" style="color:#00AEEF;">fansly.com</a></li>
-      <li>Set up creator profile → verify → add subscription tiers</li>
-      <li>Go live from <strong>Creator Dashboard</strong> when ready</li>
-      <li>Paste your profile URL below (e.g. <code>fansly.com/MistressX</code>)</li>
+      <li>Sign up at <a href="https://fansly.com" target="_blank" rel="noopener" style="color:#00AEEF;">fansly.com</a> → become a creator</li>
+      <li>Verify identity → set subscription price/tiers</li>
+      <li><strong>Creator Dashboard</strong> → <strong>Go Live</strong> when ready</li>
+      <li>Paste profile URL below (e.g. <code>fansly.com/lunna655</code>)</li>
     </ol>
   </div>`;
 }
@@ -2271,7 +2278,7 @@ function renderBroadcastRoom() {
     linksHtml += `<button class="btn-small discord-join-btn" style="max-width:220px!important;" onclick="joinDiscordExposure()">💜 Lunna's Server</button>`;
   }
   if (fanslyUrl) {
-    linksHtml += `<button class="btn-small fansly-join-btn" style="max-width:220px!important;" onclick="openFanslyLive()">💙 Fansly Live</button>`;
+    linksHtml += `<button class="btn-small fansly-join-btn" style="max-width:220px!important;" onclick="openFanslyLive()">💙 Lunna Fansly</button>`;
   }
 
   setupEl.innerHTML = `<div class="broadcast-setup" style="margin-top:16px; border-color:#5865F2;">
@@ -2289,11 +2296,16 @@ function renderBroadcastRoom() {
       <button class="btn-small" onclick="saveDiscordInvite()">Save Link</button>
     </div>
     <div class="broadcast-setup" style="margin-top:12px; border-color:#00AEEF;">
-      <strong style="color:#00AEEF;">💙 Fansly profile (paid live shows)</strong>
-      <input type="url" id="fanslyProfileInput" class="discord-setup-input" style="border-color:#00AEEF;" placeholder="https://fansly.com/YourUsername" value="${fanslyUrl}">
-      <button class="btn-small" onclick="saveFanslyProfile()">Save Fansly</button>
-      <a href="https://fansly.com/creator/home" target="_blank" rel="noopener"><button class="btn-small">Fansly Creator Dashboard</button></a>
-      <p style="font-size:0.8em; margin-top:10px;">Send me both links to publish permanently for all visitors.</p>
+      <strong style="color:#00AEEF;">💙 Lunna — Fansly paid live setup</strong>
+      <ol class="discord-steps" style="margin-top:8px;">
+        <li><a href="https://fansly.com/creator/home" target="_blank" rel="noopener" style="color:#00AEEF;">Creator Dashboard</a> → complete verification</li>
+        <li>Set tiers (e.g. $5–$15/mo for live exposure access)</li>
+        <li>When live: Dashboard → <strong>Go Live</strong> → subscribers get notified</li>
+        <li>Profile URL format: <code>https://fansly.com/lunna655</code></li>
+      </ol>
+      <input type="url" id="fanslyProfileInput" class="discord-setup-input" style="border-color:#00AEEF;" placeholder="https://fansly.com/lunna655" value="${fanslyUrl}">
+      <button class="btn-small" onclick="saveFanslyProfile()">Save Fansly Profile</button>
+      <button class="btn-small" onclick="openFanslyCreator()">Open Creator Dashboard</button>
     </div>`;
 
   if (cfg.platform === "twitch" && cfg.twitchChannel) {
