@@ -493,6 +493,248 @@
         padding: 10px 18px !important;
         margin: 8px 4px !important;
     }
+
+    .stream-exposer { text-align: left; }
+
+    .stream-layout {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 16px;
+        margin: 16px 0;
+    }
+
+    @media (max-width: 720px) {
+        .stream-layout { grid-template-columns: 1fr; }
+    }
+
+    .stream-viewport {
+        background: linear-gradient(135deg, #1a0010 0%, #330020 40%, #0a0a0a 100%);
+        border: 3px solid #ff0040;
+        border-radius: 12px;
+        min-height: 280px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(255,0,64,0.4);
+    }
+
+    .stream-viewport.active {
+        animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .stream-scanlines {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0,0,0,0.15) 2px,
+            rgba(0,0,0,0.15) 4px
+        );
+        z-index: 2;
+    }
+
+    .stream-scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 50px 20px 60px;
+        text-align: center;
+        z-index: 1;
+        transition: opacity 0.5s ease;
+    }
+
+    .stream-scene-icon {
+        font-size: 4em;
+        margin-bottom: 8px;
+        filter: drop-shadow(0 0 20px #ff1493);
+    }
+
+    .stream-scene-title {
+        color: #ffd700;
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 8px;
+    }
+
+    .stream-scene-desc {
+        color: #ffb6c1;
+        font-style: italic;
+        font-size: 0.95em;
+        max-width: 320px;
+    }
+
+    .stream-hud {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: linear-gradient(180deg, rgba(0,0,0,0.85), transparent);
+        z-index: 3;
+        font-size: 0.8em;
+        color: #fff;
+    }
+
+    .stream-live-tag {
+        color: #ff0040;
+        font-weight: bold;
+        animation: live-blink 1s ease-in-out infinite;
+    }
+
+    .stream-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px 14px;
+        background: linear-gradient(0deg, rgba(0,0,0,0.9), transparent);
+        color: #fff;
+        font-style: italic;
+        font-size: 0.9em;
+        z-index: 3;
+        text-align: center;
+    }
+
+    .stream-offline {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 280px;
+        color: #ffb6c1;
+        font-style: italic;
+    }
+
+    .stream-chat-panel {
+        background: rgba(0,0,0,0.6);
+        border: 2px solid #ff1493;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        min-height: 280px;
+        overflow: hidden;
+    }
+
+    .stream-chat-panel h3 {
+        margin: 0;
+        padding: 10px 12px;
+        font-size: 0.95em;
+        color: #ffd700;
+        border-bottom: 1px solid #ff1493;
+        text-align: center;
+    }
+
+    .stream-chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+        font-size: 0.82em;
+        max-height: 200px;
+    }
+
+    .chat-msg {
+        margin-bottom: 8px;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .chat-user {
+        color: #ff69b4;
+        font-weight: bold;
+    }
+
+    .chat-mistress { color: #ffd700; font-weight: bold; }
+    .chat-system { color: #ff0040; font-style: italic; }
+
+    .stream-chat-input {
+        display: flex;
+        gap: 6px;
+        padding: 8px;
+        border-top: 1px solid #ff1493;
+    }
+
+    .stream-chat-input input {
+        flex: 1;
+        background: #1a1a1a;
+        border: 1px solid #ff1493;
+        border-radius: 8px;
+        color: #ffb6c1;
+        padding: 8px 10px;
+        font-size: 0.85em;
+    }
+
+    .stream-chat-input button {
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 8px 14px !important;
+        font-size: 0.85em !important;
+    }
+
+    .exposure-dare {
+        background: rgba(255,0,64,0.12);
+        border: 2px dashed #ff0040;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin: 12px 0;
+        text-align: center;
+    }
+
+    .exposure-dare strong {
+        color: #ffd700;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .exposure-dare p {
+        color: #ffb6c1;
+        margin: 0;
+        font-style: italic;
+    }
+
+    .exposure-flash {
+        position: fixed;
+        inset: 0;
+        background: rgba(255,0,64,0.25);
+        z-index: 150;
+        pointer-events: none;
+        animation: exposure-flash 0.6s ease-out forwards;
+    }
+
+    @keyframes exposure-flash {
+        0% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+
+    .stream-ticker {
+        background: rgba(255,20,147,0.15);
+        border: 1px solid #ff1493;
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 12px;
+        font-size: 0.85em;
+        color: #ffb6c1;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .stream-ticker span {
+        display: inline-block;
+        animation: ticker-scroll 18s linear infinite;
+    }
+
+    @keyframes ticker-scroll {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+    }
 </style>
 <script async src="https://js.stripe.com/v3/buy-button.js"></script>
 </head>
@@ -568,6 +810,52 @@
 <div class="panel">
     <h2>Today's Duty - Complete or Be Punished</h2>
     <div id="daily"></div>
+</div>
+
+<div class="panel stream-exposer" id="streamExposerPanel">
+    <div class="live-badge"><span class="live-dot"></span> LIVE STREAM EXPOSER</div>
+    <h2>♠️ Public Exposure Cam</h2>
+    <p class="panel-subtitle">Mistress X broadcasts your humiliation to the world. Watch — or become the show.</p>
+    <div class="stream-ticker"><span id="streamTicker">♠️ LIVE NOW: locked_clitty_calgary just exposed their cage on cam — 2,847 viewers watching them leak...</span></div>
+    <div class="stream-layout">
+        <div class="stream-viewport" id="streamViewport">
+            <div class="stream-offline" id="streamOffline">
+                <p class="glitter-text" style="-webkit-text-fill-color:#ffd700;">Stream Offline</p>
+                <p>Pathetic sissies are being exposed right now. You're missing it.</p>
+                <button class="btn-small" onclick="toggleStream()" style="margin-top:12px;">▶ Go Live</button>
+            </div>
+            <div id="streamLive" style="display:none; position:absolute; inset:0;">
+                <div class="stream-scanlines"></div>
+                <div class="stream-scene" id="streamScene"></div>
+                <div class="stream-hud">
+                    <span class="stream-live-tag">● LIVE</span>
+                    <span id="streamViewers">0 watching</span>
+                    <span id="streamDuration">00:00:00</span>
+                </div>
+                <div class="stream-caption" id="streamCaption"></div>
+            </div>
+        </div>
+        <div class="stream-chat-panel">
+            <h3>💬 Exposure Chat</h3>
+            <div class="stream-chat" id="streamChat"></div>
+            <div class="stream-chat-input">
+                <input type="text" id="streamChatInput" placeholder="Beg to be exposed..." maxlength="120" onkeydown="if(event.key==='Enter')sendStreamChat()">
+                <button class="btn-small" onclick="sendStreamChat()">Send</button>
+            </div>
+        </div>
+    </div>
+    <div class="exposure-dare" id="exposureDare"></div>
+    <div class="stats-row" style="justify-content:flex-start;">
+        <span class="stat-chip">Live Exposures: <strong id="exposureCount">0</strong></span>
+        <span class="stat-chip">Watch Time: <strong id="streamWatchTime">0m</strong></span>
+        <span class="stat-chip">Chat Msgs: <strong id="streamChatCount">0</strong></span>
+    </div>
+    <div class="btn-row">
+        <button class="btn-small" id="streamToggleBtn" onclick="toggleStream()">▶ Start Stream</button>
+        <button class="btn-small" onclick="exposeLive()">🔴 EXPOSE ME LIVE (+300 pts)</button>
+        <button class="btn-small" onclick="completeExposureDare()">Complete Dare (+150 pts)</button>
+        <button class="btn-small buy-btn" onclick="scrollToPurchase()">Unlock Private Exposer — $19.99</button>
+    </div>
 </div>
 
 <div class="panel live-teaser">
@@ -746,6 +1034,59 @@ const teaserLines = [
   "Mistress X: 'Beg for denial. That's all you're good for.'"
 ];
 
+const streamScenes = [
+  { icon: "🔒", title: "Cage Check Cam", desc: "Sissy_boi_42 trembling on cam — pink cage dripping while chat counts every leak." },
+  { icon: "🍑", title: "Plug Exposure", desc: "Plugged_cumrag showing off their stretched bussy for 3,000 viewers. Mistress X approves." },
+  { icon: "📸", title: "Proof Review Live", desc: "Mistress X reviewing pathetic dick pics live. 'Smaller than my pinky. Next.'"},
+  { icon: "⏱️", title: "Edging Marathon", desc: "Denied_sissy_69 on hour 4 — edging on cam, begging not to cum. Chat says DENY." },
+  { icon: "♠️", title: "BBC Goon Cam", desc: "White_clit_failure gooning to BBC on the big screen. Brain officially melted." },
+  { icon: "📢", title: "Public Shame Alert", desc: "Calgary_cumrag just got exposed to their entire contact list. Mistress X is proud." },
+  { icon: "👗", title: "Panty Parade", desc: "Leaky_panty_beta modeling frilly panties live. Every drip tracked on the leaderboard." },
+  { icon: "🧎", title: "Kneel & Beg", desc: "New sissy on cam begging Mistress X to lock them forever. Chat: 'pathetic lol'" }
+];
+
+const streamChatPool = [
+  { user: "bbc_king_99", msg: "another white boy leaking lmaooo" },
+  { user: "mistress_fan", msg: "EXPOSE HIM MORE" },
+  { user: "locked4life", msg: "i've been denied 47 days watching this" },
+  { user: "goon_drone_x", msg: "my brain is mush from this stream" },
+  { user: "superior_bbc", msg: "white clitties are hilarious" },
+  { user: "pink_cage", msg: "just leaked watching this 😭" },
+  { user: "exposure_addict", msg: "post his @ on twitter" },
+  { user: "denial_queen", msg: "DON'T YOU DARE CUM SISSY" },
+  { user: "bussy_boi", msg: "wish that was me on cam" },
+  { user: "calgary_cuck", msg: "mistress x owns all of us" },
+  { user: "chastity_check", msg: "cage check NOW" },
+  { user: "plug_slave", msg: "stage 4 plug and still not worthy" }
+];
+
+const mistressChatLines = [
+  "Show them that locked clitty. NOW.",
+  "Pathetic. Edge harder while they watch.",
+  "You're entertainment, not a person.",
+  "Leak for the camera, cumrag.",
+  "3,000 people see what a failure you are.",
+  "Beg louder. They can't hear your shame.",
+  "Your bussy is the only interesting thing about you.",
+  "Deny. Deny. Deny. That's your only talent."
+];
+
+const exposureDares = [
+  "Hold your cage to the camera for 30 seconds while saying 'my clitty is useless.'",
+  "Write 'BBC OWNS ME' on your stomach and show the stream.",
+  "Edge 10 times on cam without cumming. Chat is watching.",
+  "Put on your sluttiest panties and do a spin for Mistress X.",
+  "Read today's mantra out loud to 2,000+ viewers.",
+  "Send this stream screenshot to one person who knows you.",
+  "Kneel, hands behind head, and beg for permanent denial.",
+  "Show your plug and thank Superior Black Cock out loud."
+];
+
+const tickerNames = [
+  "locked_clitty_calgary", "pink_cage_beta", "denied_sissy_69", "leaky_cumrag",
+  "bussy_pet_xx", "white_clit_failure", "chastity_slut", "goon_drone_420"
+];
+
 // ── Storage keys ──────────────────────────────────────────────────
 
 const KEYS = {
@@ -766,7 +1107,14 @@ const KEYS = {
   dailyMantraDate: "sissyDailyMantraDate",
   dailyMantraId: "sissyDailyMantraId",
   humiliationIdx: "sissyHumiliationIdx",
-  bannerIdx: "sissyBannerIdx"
+  bannerIdx: "sissyBannerIdx",
+  exposureCount: "sissyExposureCount",
+  streamWatchMin: "sissyStreamWatchMin",
+  streamChatCount: "sissyStreamChatCount",
+  exposureDareDate: "sissyExposureDareDate",
+  exposureDareId: "sissyExposureDareId",
+  exposureDareDone: "sissyExposureDareDone",
+  lastExposeDate: "sissyLastExposeDate"
 };
 
 // ── Storage helpers ───────────────────────────────────────────────
@@ -1167,6 +1515,245 @@ function renderDaily() {
   `;
 }
 
+// ── Live Stream Exposer ───────────────────────────────────────────
+
+let streamActive = false;
+let streamStartTime = null;
+let streamSceneIdx = 0;
+let streamIntervals = [];
+
+function getExposureCount() {
+  return parseInt(localStorage.getItem(KEYS.exposureCount) || "0", 10);
+}
+
+function getStreamWatchMin() {
+  return parseInt(localStorage.getItem(KEYS.streamWatchMin) || "0", 10);
+}
+
+function getStreamChatCount() {
+  return parseInt(localStorage.getItem(KEYS.streamChatCount) || "0", 10);
+}
+
+function renderStreamStats() {
+  document.getElementById("exposureCount").textContent = getExposureCount();
+  document.getElementById("streamWatchTime").textContent = getStreamWatchMin() + "m";
+  document.getElementById("streamChatCount").textContent = getStreamChatCount();
+}
+
+function getDailyExposureDare() {
+  const today = new Date().toDateString();
+  const savedDate = localStorage.getItem(KEYS.exposureDareDate);
+  const savedId = localStorage.getItem(KEYS.exposureDareId);
+
+  if (savedDate === today && savedId !== null) {
+    return parseInt(savedId, 10);
+  }
+  const id = Math.floor(Math.random() * exposureDares.length);
+  localStorage.setItem(KEYS.exposureDareDate, today);
+  localStorage.setItem(KEYS.exposureDareId, id);
+  localStorage.removeItem(KEYS.exposureDareDone);
+  return id;
+}
+
+function renderExposureDare() {
+  const dareId = getDailyExposureDare();
+  const done = localStorage.getItem(KEYS.exposureDareDone) === "1";
+  document.getElementById("exposureDare").innerHTML = `
+    <strong>♠️ Today's Live Exposure Dare</strong>
+    <p>${exposureDares[dareId]}</p>
+    ${done ? "<p style='color:#90ee90; margin-top:8px;'><em>Dare completed on stream. Mistress X saw everything.</em></p>" : ""}
+  `;
+}
+
+function renderStreamScene() {
+  const scene = streamScenes[streamSceneIdx % streamScenes.length];
+  document.getElementById("streamScene").innerHTML = `
+    <div class="stream-scene-icon">${scene.icon}</div>
+    <div class="stream-scene-title">${scene.title}</div>
+    <div class="stream-scene-desc">${scene.desc}</div>
+  `;
+  document.getElementById("streamCaption").textContent =
+    `Mistress X: "${mistressChatLines[streamSceneIdx % mistressChatLines.length]}"`;
+}
+
+function renderStreamViewers() {
+  const base = 2100 + Math.floor(Math.random() * 1800);
+  document.getElementById("streamViewers").textContent = base.toLocaleString() + " watching";
+}
+
+function updateStreamDuration() {
+  if (!streamStartTime) return;
+  const sec = Math.floor((Date.now() - streamStartTime) / 1000);
+  const h = String(Math.floor(sec / 3600)).padStart(2, "0");
+  const m = String(Math.floor((sec % 3600) / 60)).padStart(2, "0");
+  const s = String(sec % 60).padStart(2, "0");
+  document.getElementById("streamDuration").textContent = `${h}:${m}:${s}`;
+}
+
+function appendChatMessage(html) {
+  const chat = document.getElementById("streamChat");
+  const div = document.createElement("div");
+  div.className = "chat-msg";
+  div.innerHTML = html;
+  chat.appendChild(div);
+  while (chat.children.length > 40) chat.removeChild(chat.firstChild);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function botStreamChat() {
+  if (!streamActive) return;
+  const roll = Math.random();
+  if (roll < 0.25) {
+    appendChatMessage(`<span class="chat-mistress">Mistress X:</span> ${mistressChatLines[Math.floor(Math.random() * mistressChatLines.length)]}`);
+  } else {
+    const c = streamChatPool[Math.floor(Math.random() * streamChatPool.length)];
+    appendChatMessage(`<span class="chat-user">${c.user}:</span> ${c.msg}`);
+  }
+}
+
+function initStreamChat() {
+  document.getElementById("streamChat").innerHTML = "";
+  appendChatMessage(`<span class="chat-system">♠️ Mistress X's Exposure Cam is LIVE — behave, cumrags.</span>`);
+  appendChatMessage(`<span class="chat-mistress">Mistress X:</span> Another pathetic sissy joined. Say hi to your audience.`);
+  for (let i = 0; i < 4; i++) botStreamChat();
+}
+
+function sendStreamChat() {
+  const input = document.getElementById("streamChatInput");
+  const text = (input.value || "").trim();
+  if (!text) return;
+  appendChatMessage(`<span class="chat-user">You:</span> ${text}`);
+  input.value = "";
+  const count = getStreamChatCount() + 1;
+  localStorage.setItem(KEYS.streamChatCount, count);
+  renderStreamStats();
+  setTimeout(() => {
+    appendChatMessage(`<span class="chat-mistress">Mistress X:</span> "${text}" — how pathetic. Everyone saw that.`);
+  }, 800 + Math.random() * 1200);
+  if (Math.random() < 0.4) setTimeout(botStreamChat, 1500);
+}
+
+function flashExposure() {
+  const el = document.createElement("div");
+  el.className = "exposure-flash";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 600);
+}
+
+function toggleStream() {
+  if (streamActive) {
+    stopStream();
+  } else {
+    startStream();
+  }
+}
+
+function startStream() {
+  streamActive = true;
+  streamStartTime = Date.now();
+  streamSceneIdx = 0;
+  document.getElementById("streamOffline").style.display = "none";
+  document.getElementById("streamLive").style.display = "block";
+  document.getElementById("streamViewport").classList.add("active");
+  document.getElementById("streamToggleBtn").textContent = "⏹ Stop Stream";
+  initStreamChat();
+  renderStreamScene();
+  renderStreamViewers();
+  updateStreamDuration();
+  clearStreamIntervals();
+  streamIntervals.push(setInterval(() => {
+    streamSceneIdx++;
+    renderStreamScene();
+  }, 8000));
+  streamIntervals.push(setInterval(renderStreamViewers, 12000));
+  streamIntervals.push(setInterval(updateStreamDuration, 1000));
+  streamIntervals.push(setInterval(botStreamChat, 3500));
+  streamIntervals.push(setInterval(() => {
+    const min = getStreamWatchMin() + 1;
+    localStorage.setItem(KEYS.streamWatchMin, min);
+    renderStreamStats();
+    if (min % 5 === 0) addPoints(25);
+  }, 60000));
+  updateStreamTicker();
+}
+
+function stopStream() {
+  streamActive = false;
+  streamStartTime = null;
+  document.getElementById("streamOffline").style.display = "flex";
+  document.getElementById("streamLive").style.display = "none";
+  document.getElementById("streamViewport").classList.remove("active");
+  document.getElementById("streamToggleBtn").textContent = "▶ Start Stream";
+  clearStreamIntervals();
+}
+
+function clearStreamIntervals() {
+  streamIntervals.forEach(id => clearInterval(id));
+  streamIntervals = [];
+}
+
+function updateStreamTicker() {
+  const name = tickerNames[Math.floor(Math.random() * tickerNames.length)];
+  const viewers = (2000 + Math.floor(Math.random() * 2500)).toLocaleString();
+  const actions = [
+    "just exposed their cage on cam",
+    "is edging live for Mistress X",
+    "failed a denial challenge on stream",
+    "got their bussy rated by chat",
+    "begged for permanent chastity live"
+  ];
+  const action = actions[Math.floor(Math.random() * actions.length)];
+  document.getElementById("streamTicker").textContent =
+    `♠️ LIVE NOW: ${name} ${action} — ${viewers} viewers watching them leak...`;
+}
+
+function exposeLive() {
+  const today = new Date().toDateString();
+  const last = localStorage.getItem(KEYS.lastExposeDate);
+  if (last === today) {
+    alert("You already exposed yourself live today, cumrag. The internet has enough of your shame. Come back tomorrow.");
+    return;
+  }
+  if (!streamActive) {
+    if (!confirm("Stream isn't live. Expose yourself anyway? Mistress X will still broadcast your humiliation.")) return;
+    startStream();
+  }
+  flashExposure();
+  const count = getExposureCount() + 1;
+  localStorage.setItem(KEYS.exposureCount, count);
+  localStorage.setItem(KEYS.lastExposeDate, today);
+  renderStreamStats();
+  addPoints(300);
+  appendChatMessage(`<span class="chat-system">🔴 EXPOSURE ALERT: A new sissy just went live! Chat is going wild.</span>`);
+  setTimeout(() => {
+    appendChatMessage(`<span class="chat-mistress">Mistress X:</span> There. Everyone saw you. You'll never live this down.`);
+  }, 500);
+  alert("🔴 EXPOSED LIVE!\n\nMistress X broadcast your humiliation to thousands of viewers.\n+300 pts. Send photo/video proof NOW.");
+}
+
+function completeExposureDare() {
+  if (localStorage.getItem(KEYS.exposureDareDone) === "1") {
+    alert("Today's dare already completed on stream. Mistress X has your proof.");
+    return;
+  }
+  if (!streamActive) {
+    if (!confirm("Start the exposure stream to complete your dare?")) return;
+    startStream();
+  }
+  localStorage.setItem(KEYS.exposureDareDone, "1");
+  renderExposureDare();
+  addPoints(150);
+  flashExposure();
+  appendChatMessage(`<span class="chat-system">✅ Dare completed on cam — chat applauds your degradation.</span>`);
+  alert("+150 pts! Dare completed on Mistress X's Exposure Cam. Send proof or face punishment.");
+}
+
+function renderStreamExposer() {
+  renderStreamStats();
+  renderExposureDare();
+  updateStreamTicker();
+}
+
 // ── Live Teaser ───────────────────────────────────────────────────
 
 function renderLiveCountdown() {
@@ -1207,12 +1794,14 @@ function renderAll() {
   renderPlugStages();
   renderAdventures();
   renderDaily();
+  renderStreamExposer();
   renderLiveCountdown();
 }
 
 renderAll();
 setInterval(renderLiveCountdown, 60000);
 setInterval(renderChastity, 15000);
+setInterval(() => { if (streamActive) updateStreamTicker(); }, 20000);
 </script>
 </body>
 </html>
