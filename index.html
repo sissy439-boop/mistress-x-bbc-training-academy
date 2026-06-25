@@ -624,6 +624,50 @@
         font-size: 0.9em;
     }
 
+    .discord-panel {
+        background: linear-gradient(135deg, rgba(88,101,242,0.25), rgba(15,15,15,0.95));
+        border: 3px solid #5865F2;
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .discord-logo {
+        font-size: 2.5em;
+        margin-bottom: 8px;
+    }
+
+    .discord-join-btn {
+        background: linear-gradient(90deg, #5865F2, #7289da) !important;
+        font-size: 1.15em !important;
+        padding: 16px 28px !important;
+        max-width: 340px !important;
+        margin: 16px auto !important;
+        display: block !important;
+    }
+
+    .discord-setup-input {
+        width: 100%;
+        max-width: 420px;
+        background: #1a1a1a;
+        border: 2px solid #5865F2;
+        border-radius: 10px;
+        color: #fff;
+        padding: 12px 14px;
+        font-size: 0.95em;
+        margin: 10px auto;
+        display: block;
+    }
+
+    .discord-steps {
+        text-align: left;
+        margin-top: 16px;
+        font-size: 0.88em;
+        color: #ddd;
+    }
+
+    .discord-steps li { margin: 8px 0; }
+
     .stream-viewport.active {
         animation: pulse-glow 2s ease-in-out infinite;
     }
@@ -926,7 +970,7 @@
     <div class="stream-info-box">
       <strong>Where does it stream?</strong><br>
       <strong>Your cam (left)</strong> = local preview only — only YOU see it in your browser. It does <em>not</em> upload to the internet.<br>
-      <strong>Real live audience</strong> = Mistress X's Twitch/YouTube/room embed below — that's where viewers actually watch.
+      <strong>Real live audience</strong> = Mistress X's <strong>Discord server</strong> below — join voice/video there to expose for real.
     </div>
     <p class="stream-permission-note">📷 Your cam preview needs browser permission. Real broadcasting uses OBS or the Twitch/YouTube app.</p>
     <div class="stream-ticker"><span id="streamTicker">♠️ Roleplay ticker — connect Twitch/YouTube below for a real public stream...</span></div>
@@ -976,10 +1020,11 @@
     </div>
 
     <div class="broadcast-room">
-        <h2 style="margin-top:0;">📡 Mistress X Public Broadcast Room</h2>
-        <p class="panel-subtitle">This is the REAL live stream — where the internet actually watches.</p>
+        <h2 style="margin-top:0;">💜 Mistress X Discord Live Exposure Room</h2>
+        <p class="panel-subtitle">Real live exposure happens on Discord — voice/video with Mistress X and other sissies.</p>
         <div id="broadcastEmbed"></div>
         <div class="btn-row" id="broadcastLinks"></div>
+        <div id="discordOwnerSetup"></div>
     </div>
 </div>
 
@@ -1161,12 +1206,14 @@ const teaserLines = [
 
 // ── REAL LIVE STREAM CONFIG (edit these for your actual broadcast) ──
 const LIVE_STREAM_CONFIG = {
-  platform: "twitch",           // "twitch" or "youtube"
-  twitchChannel: "",            // e.g. "mistressxbbc" — your Twitch username
-  youtubeVideoId: "",           // YouTube LIVE video ID (from watch URL)
-  publicWatchUrl: "",           // Full link viewers open (Twitch/YouTube channel live page)
-  exposureRoomUrl: "",          // Discord stage, Telegram, Whereby — sissies join here to expose
-  siteDomain: "sissy439-boop.github.io"  // Required for Twitch embed on GitHub Pages
+  platform: "discord",          // "discord" | "twitch" | "youtube"
+  discordInviteUrl: "",         // YOUR invite link: https://discord.gg/xxxxxx
+  discordServerName: "Mistress X BBC Training Academy",
+  discordChannelName: "Exposure Cam Live",
+  twitchChannel: "",
+  youtubeVideoId: "",
+  publicWatchUrl: "",
+  siteDomain: "sissy439-boop.github.io"
 };
 
 const streamScenes = [
@@ -1249,7 +1296,8 @@ const KEYS = {
   exposureDareDate: "sissyExposureDareDate",
   exposureDareId: "sissyExposureDareId",
   exposureDareDone: "sissyExposureDareDone",
-  lastExposeDate: "sissyLastExposeDate"
+  lastExposeDate: "sissyLastExposeDate",
+  discordInvite: "mistressDiscordInvite"
 };
 
 // ── Storage helpers ───────────────────────────────────────────────
@@ -1954,6 +2002,14 @@ async function exposeLive() {
     alert("Camera not connected. Allow camera access in your browser, then click Reconnect Cam before exposing yourself.");
     return;
   }
+  const discordUrl = getDiscordInviteUrl();
+  if (discordUrl) {
+    if (confirm("🔴 EXPOSE LIVE!\n\nYour cam preview is local only. To expose for REAL, join Mistress X's Discord room now.\n\nOpen Discord exposure room?")) {
+      window.open(discordUrl, "_blank", "noopener");
+    }
+  } else {
+    alert("Cam preview ready. Connect your Discord invite link below so sissies can join you for REAL live exposure.");
+  }
   document.getElementById("streamCamBadge").textContent = "🔴 EXPOSED LIVE";
   flashExposure();
   const count = getExposureCount() + 1;
@@ -1990,12 +2046,81 @@ async function completeExposureDare() {
   alert("+150 pts! Dare completed on Mistress X's Exposure Cam. Send proof or face punishment.");
 }
 
+function getDiscordInviteUrl() {
+  const saved = localStorage.getItem(KEYS.discordInvite);
+  if (saved && saved.startsWith("https://discord.")) return saved;
+  const cfg = LIVE_STREAM_CONFIG.discordInviteUrl;
+  if (cfg && cfg.startsWith("https://discord.")) return cfg;
+  return "";
+}
+
+function saveDiscordInvite() {
+  const input = document.getElementById("discordInviteInput");
+  const url = (input.value || "").trim();
+  if (!url.match(/^https:\/\/discord\.(gg|com)\//)) {
+    alert("Paste a valid Discord invite link.\nExample: https://discord.gg/abc123");
+    return;
+  }
+  localStorage.setItem(KEYS.discordInvite, url);
+  LIVE_STREAM_CONFIG.discordInviteUrl = url;
+  renderBroadcastRoom();
+  alert("Discord invite saved! Visitors on THIS browser can join now.\n\nTo make it permanent for everyone, tell me the link and I'll push it to GitHub.");
+}
+
+function joinDiscordExposure() {
+  const url = getDiscordInviteUrl();
+  if (!url) {
+    alert("Discord not connected yet. Mistress X: paste your invite link in the setup box below.");
+    return;
+  }
+  window.open(url, "_blank", "noopener");
+}
+
 function renderBroadcastRoom() {
   const cfg = LIVE_STREAM_CONFIG;
   const embedEl = document.getElementById("broadcastEmbed");
   const linksEl = document.getElementById("broadcastLinks");
+  const setupEl = document.getElementById("discordOwnerSetup");
+  const discordUrl = getDiscordInviteUrl();
   let embedHtml = "";
   let linksHtml = "";
+
+  if (cfg.platform === "discord") {
+    if (discordUrl) {
+      embedHtml = `<div class="discord-panel">
+        <div class="discord-logo">💜</div>
+        <h3 style="color:#fff; margin:0 0 8px;">${cfg.discordServerName}</h3>
+        <p style="color:#b9bbbe; margin:0;">Join <strong style="color:#ffd700;">${cfg.discordChannelName}</strong> — turn on cam &amp; mic to expose live for Mistress X.</p>
+        <button class="discord-join-btn buy-btn" onclick="joinDiscordExposure()">💜 JOIN DISCORD EXPOSURE ROOM</button>
+        <p style="font-size:0.82em; color:#90ee90;"><em>♠️ Real live room — opens Discord app or browser</em></p>
+      </div>`;
+      linksHtml = `<button class="btn-small discord-join-btn" style="max-width:280px!important;" onclick="joinDiscordExposure()">💜 Open Discord Now</button>`;
+    } else {
+      embedHtml = `<div class="discord-panel">
+        <div class="discord-logo">💜</div>
+        <h3 style="color:#fff;">Connect Your Discord Server</h3>
+        <p style="color:#b9bbbe;">Mistress X — you have Discord. Create a server invite and paste it below so sissies can join your <strong>live exposure room</strong>.</p>
+        <ol class="discord-steps">
+          <li>Open Discord → create a server (or use yours)</li>
+          <li>Create a voice channel: <strong>${cfg.discordChannelName}</strong></li>
+          <li>Right-click channel → <strong>Invite People</strong> → copy link</li>
+          <li>Paste below → click <strong>Save Invite</strong></li>
+          <li>For Stage events: Server Settings → Enable Community → create a <strong>Stage Channel</strong></li>
+        </ol>
+      </div>`;
+    }
+    setupEl.innerHTML = `<div class="broadcast-setup" style="margin-top:16px; border-color:#5865F2;">
+      <strong style="color:#5865F2;">Mistress X — paste your Discord invite link</strong>
+      <input type="url" id="discordInviteInput" class="discord-setup-input" placeholder="https://discord.gg/your-invite-here" value="${discordUrl}">
+      <div class="btn-row">
+        <button class="btn-small" onclick="saveDiscordInvite()">💜 Save Discord Invite</button>
+        <a href="https://discord.com/app" target="_blank" rel="noopener"><button class="btn-small">Open Discord</button></a>
+      </div>
+      <p style="font-size:0.8em; margin-top:10px;">Saved links work on your browser instantly. Send me the link to add it permanently for all visitors.</p>
+    </div>`;
+  } else {
+    setupEl.innerHTML = "";
+  }
 
   if (cfg.platform === "twitch" && cfg.twitchChannel) {
     const parents = [cfg.siteDomain, "localhost"].map(p =>
@@ -2010,27 +2135,18 @@ function renderBroadcastRoom() {
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen></iframe></div>
       <p style="color:#90ee90; font-size:0.9em;"><em>♠️ LIVE on YouTube</em></p>`;
-  } else {
+  } else if (cfg.platform !== "discord") {
     embedHtml = `<div class="broadcast-setup">
-      <strong style="color:#ffd700;">No real stream connected yet.</strong>
-      <p>Your cam preview above is <strong>only on your screen</strong>. To stream live to an audience, Mistress X needs to connect a platform:</p>
-      <ol>
-        <li><strong>Twitch (free):</strong> Create a channel → go live with <a href="https://www.twitch.tv/broadcast" target="_blank" rel="noopener" style="color:#ff69b4;">Twitch app or OBS</a></li>
-        <li><strong>YouTube Live:</strong> Go live from phone or <a href="https://studio.youtube.com" target="_blank" rel="noopener" style="color:#ff69b4;">YouTube Studio</a></li>
-        <li><strong>Edit this site:</strong> Open <code>index.html</code> → set <code>LIVE_STREAM_CONFIG</code> → add your <code>twitchChannel</code> or <code>youtubeVideoId</code></li>
-        <li><strong>Sissies expose on cam:</strong> Share a <code>exposureRoomUrl</code> (Discord Stage, Telegram video chat, Whereby room)</li>
-      </ol>
-      <p style="margin-top:12px;">Example config:<br>
-      <code>twitchChannel: "your_twitch_name"</code><br>
-      <code>publicWatchUrl: "https://twitch.tv/your_twitch_name"</code></p>
+      <strong style="color:#ffd700;">No Twitch/YouTube stream connected.</strong>
+      <p>Discord is the default exposure platform — set <code>platform: "discord"</code> in config.</p>
     </div>`;
   }
 
   if (cfg.publicWatchUrl) {
-    linksHtml += `<a href="${cfg.publicWatchUrl}" target="_blank" rel="noopener"><button class="btn-small buy-btn">▶ Watch Live (Real Audience)</button></a>`;
+    linksHtml += `<a href="${cfg.publicWatchUrl}" target="_blank" rel="noopener"><button class="btn-small buy-btn">▶ Watch Live</button></a>`;
   }
-  if (cfg.exposureRoomUrl) {
-    linksHtml += `<a href="${cfg.exposureRoomUrl}" target="_blank" rel="noopener"><button class="btn-small">📷 Join Exposure Room (Cam Required)</button></a>`;
+  if (discordUrl && cfg.platform !== "discord") {
+    linksHtml += `<button class="btn-small" onclick="joinDiscordExposure()">💜 Join Discord</button>`;
   }
   if (cfg.platform === "twitch" && cfg.twitchChannel) {
     linksHtml += `<a href="https://dashboard.twitch.tv/u/${encodeURIComponent(cfg.twitchChannel)}/stream-manager" target="_blank" rel="noopener"><button class="btn-small">Twitch Dashboard (Go Live)</button></a>`;
