@@ -517,6 +517,49 @@
         box-shadow: 0 0 30px rgba(255,0,64,0.4);
     }
 
+    .stream-webcam {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+        z-index: 0;
+        display: none;
+        background: #000;
+    }
+
+    .stream-cam-error {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(0,0,0,0.9);
+        z-index: 5;
+        text-align: center;
+        color: #ffb6c1;
+        gap: 12px;
+    }
+
+    .stream-cam-badge {
+        background: #ff0040;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75em;
+        font-weight: bold;
+    }
+
+    .stream-permission-note {
+        font-size: 0.85em;
+        color: #ffd700;
+        margin: 0 0 12px;
+        text-align: center;
+    }
+
     .stream-viewport.active {
         animation: pulse-glow 2s ease-in-out infinite;
     }
@@ -815,20 +858,24 @@
 <div class="panel stream-exposer" id="streamExposerPanel">
     <div class="live-badge"><span class="live-dot"></span> LIVE STREAM EXPOSER</div>
     <h2>♠️ Public Exposure Cam</h2>
-    <p class="panel-subtitle">Mistress X broadcasts your humiliation to the world. Watch — or become the show.</p>
+    <p class="panel-subtitle">Mistress X broadcasts your humiliation to the world. Go live on YOUR camera — browser will ask permission.</p>
+    <p class="stream-permission-note">📷 Requires camera access. Use Chrome/Edge on HTTPS. Allow camera when prompted.</p>
     <div class="stream-ticker"><span id="streamTicker">♠️ LIVE NOW: locked_clitty_calgary just exposed their cage on cam — 2,847 viewers watching them leak...</span></div>
     <div class="stream-layout">
         <div class="stream-viewport" id="streamViewport">
             <div class="stream-offline" id="streamOffline">
-                <p class="glitter-text" style="-webkit-text-fill-color:#ffd700;">Stream Offline</p>
-                <p>Pathetic sissies are being exposed right now. You're missing it.</p>
-                <button class="btn-small" onclick="toggleStream()" style="margin-top:12px;">▶ Go Live</button>
+                <p class="glitter-text" style="-webkit-text-fill-color:#ffd700;">Exposure Cam Offline</p>
+                <p>Click Go Live — your webcam becomes Mistress X's public exposure feed.</p>
+                <button class="btn-small" onclick="toggleStream()" style="margin-top:12px;">📷 Go Live on Cam</button>
             </div>
             <div id="streamLive" style="display:none; position:absolute; inset:0;">
+                <video id="streamWebcam" class="stream-webcam" autoplay playsinline muted></video>
                 <div class="stream-scanlines"></div>
                 <div class="stream-scene" id="streamScene"></div>
+                <div class="stream-cam-error" id="streamCamError"></div>
                 <div class="stream-hud">
                     <span class="stream-live-tag">● LIVE</span>
+                    <span class="stream-cam-badge" id="streamCamBadge">YOUR CAM</span>
                     <span id="streamViewers">0 watching</span>
                     <span id="streamDuration">00:00:00</span>
                 </div>
@@ -851,7 +898,9 @@
         <span class="stat-chip">Chat Msgs: <strong id="streamChatCount">0</strong></span>
     </div>
     <div class="btn-row">
-        <button class="btn-small" id="streamToggleBtn" onclick="toggleStream()">▶ Start Stream</button>
+        <button class="btn-small" id="streamToggleBtn" onclick="toggleStream()">📷 Go Live on Cam</button>
+        <button class="btn-small" onclick="flipCamera()">🔄 Flip Cam</button>
+        <button class="btn-small" onclick="retryWebcam()">Reconnect Cam</button>
         <button class="btn-small" onclick="exposeLive()">🔴 EXPOSE ME LIVE (+300 pts)</button>
         <button class="btn-small" onclick="completeExposureDare()">Complete Dare (+150 pts)</button>
         <button class="btn-small buy-btn" onclick="scrollToPurchase()">Unlock Private Exposer — $19.99</button>
@@ -1521,6 +1570,9 @@ let streamActive = false;
 let streamStartTime = null;
 let streamSceneIdx = 0;
 let streamIntervals = [];
+let cameraStream = null;
+let cameraActive = false;
+let cameraFacing = "user";
 
 function getExposureCount() {
   return parseInt(localStorage.getItem(KEYS.exposureCount) || "0", 10);
@@ -1571,9 +1623,89 @@ function renderStreamScene() {
     <div class="stream-scene-icon">${scene.icon}</div>
     <div class="stream-scene-title">${scene.title}</div>
     <div class="stream-scene-desc">${scene.desc}</div>
+    <p style="font-size:0.8em; margin-top:12px; color:#ff0040;">Camera unavailable — preview mode only</p>
   `;
   document.getElementById("streamCaption").textContent =
     `Mistress X: "${mistressChatLines[streamSceneIdx % mistressChatLines.length]}"`;
+}
+
+function showCamError(msg) {
+  const errEl = document.getElementById("streamCamError");
+  errEl.innerHTML = `<p>${msg}</p><button class="btn-small" onclick="retryWebcam()">Allow &amp; Retry Camera</button>`;
+  errEl.style.display = "flex";
+}
+
+function hideCamError() {
+  document.getElementById("streamCamError").style.display = "none";
+}
+
+function stopWebcamTracks() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  const video = document.getElementById("streamWebcam");
+  if (video) video.srcObject = null;
+  cameraActive = false;
+}
+
+async function startWebcam() {
+  const video = document.getElementById("streamWebcam");
+  hideCamError();
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showCamError("Camera API not available. Open the site via HTTPS (GitHub Pages) or localhost — not as a local file.");
+    document.getElementById("streamScene").style.display = "flex";
+    video.style.display = "none";
+    renderStreamScene();
+    return false;
+  }
+
+  try {
+    stopWebcamTracks();
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: cameraFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    cameraStream = stream;
+    video.srcObject = stream;
+    await video.play();
+    cameraActive = true;
+    video.style.display = "block";
+    document.getElementById("streamScene").style.display = "none";
+    document.getElementById("streamCamBadge").textContent = "YOUR CAM — LIVE";
+    document.getElementById("streamCaption").textContent =
+      `Mistress X: "There you are, cumrag. Thousands are watching YOUR pathetic face."`;
+    return true;
+  } catch (err) {
+    cameraActive = false;
+    video.style.display = "none";
+    document.getElementById("streamScene").style.display = "flex";
+    renderStreamScene();
+    let msg = "Could not access camera. Click Allow when your browser asks, then hit Reconnect Cam.";
+    if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+      msg = "Camera blocked. Click the camera icon in your browser address bar → Allow → then Reconnect Cam.";
+    } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+      msg = "No camera found. Plug in a webcam or use a phone with a front camera.";
+    } else if (err.name === "NotReadableError") {
+      msg = "Camera is in use by another app. Close Zoom/Discord/Camera app and retry.";
+    }
+    showCamError(msg);
+    return false;
+  }
+}
+
+async function retryWebcam() {
+  if (!streamActive) {
+    await startStream();
+    return;
+  }
+  await startWebcam();
+}
+
+async function flipCamera() {
+  cameraFacing = cameraFacing === "user" ? "environment" : "user";
+  if (streamActive) await startWebcam();
 }
 
 function renderStreamViewers() {
@@ -1648,23 +1780,32 @@ function toggleStream() {
   }
 }
 
-function startStream() {
+async function startStream() {
   streamActive = true;
   streamStartTime = Date.now();
   streamSceneIdx = 0;
   document.getElementById("streamOffline").style.display = "none";
   document.getElementById("streamLive").style.display = "block";
   document.getElementById("streamViewport").classList.add("active");
-  document.getElementById("streamToggleBtn").textContent = "⏹ Stop Stream";
+  document.getElementById("streamToggleBtn").textContent = "⏹ Stop Cam";
   initStreamChat();
-  renderStreamScene();
   renderStreamViewers();
   updateStreamDuration();
   clearStreamIntervals();
-  streamIntervals.push(setInterval(() => {
-    streamSceneIdx++;
-    renderStreamScene();
-  }, 8000));
+
+  const camOk = await startWebcam();
+  if (!camOk) {
+    streamIntervals.push(setInterval(() => {
+      streamSceneIdx++;
+      renderStreamScene();
+    }, 8000));
+  } else {
+    streamIntervals.push(setInterval(() => {
+      document.getElementById("streamCaption").textContent =
+        `Mistress X: "${mistressChatLines[streamSceneIdx++ % mistressChatLines.length]}"`;
+    }, 8000));
+  }
+
   streamIntervals.push(setInterval(renderStreamViewers, 12000));
   streamIntervals.push(setInterval(updateStreamDuration, 1000));
   streamIntervals.push(setInterval(botStreamChat, 3500));
@@ -1680,10 +1821,14 @@ function startStream() {
 function stopStream() {
   streamActive = false;
   streamStartTime = null;
+  stopWebcamTracks();
+  hideCamError();
+  document.getElementById("streamWebcam").style.display = "none";
+  document.getElementById("streamScene").style.display = "flex";
   document.getElementById("streamOffline").style.display = "flex";
   document.getElementById("streamLive").style.display = "none";
   document.getElementById("streamViewport").classList.remove("active");
-  document.getElementById("streamToggleBtn").textContent = "▶ Start Stream";
+  document.getElementById("streamToggleBtn").textContent = "📷 Go Live on Cam";
   clearStreamIntervals();
 }
 
@@ -1707,7 +1852,7 @@ function updateStreamTicker() {
     `♠️ LIVE NOW: ${name} ${action} — ${viewers} viewers watching them leak...`;
 }
 
-function exposeLive() {
+async function exposeLive() {
   const today = new Date().toDateString();
   const last = localStorage.getItem(KEYS.lastExposeDate);
   if (last === today) {
@@ -1715,9 +1860,15 @@ function exposeLive() {
     return;
   }
   if (!streamActive) {
-    if (!confirm("Stream isn't live. Expose yourself anyway? Mistress X will still broadcast your humiliation.")) return;
-    startStream();
+    await startStream();
+  } else if (!cameraActive) {
+    await startWebcam();
   }
+  if (!cameraActive) {
+    alert("Camera not connected. Allow camera access in your browser, then click Reconnect Cam before exposing yourself.");
+    return;
+  }
+  document.getElementById("streamCamBadge").textContent = "🔴 EXPOSED LIVE";
   flashExposure();
   const count = getExposureCount() + 1;
   localStorage.setItem(KEYS.exposureCount, count);
@@ -1731,14 +1882,19 @@ function exposeLive() {
   alert("🔴 EXPOSED LIVE!\n\nMistress X broadcast your humiliation to thousands of viewers.\n+300 pts. Send photo/video proof NOW.");
 }
 
-function completeExposureDare() {
+async function completeExposureDare() {
   if (localStorage.getItem(KEYS.exposureDareDone) === "1") {
     alert("Today's dare already completed on stream. Mistress X has your proof.");
     return;
   }
   if (!streamActive) {
-    if (!confirm("Start the exposure stream to complete your dare?")) return;
-    startStream();
+    await startStream();
+  } else if (!cameraActive) {
+    await startWebcam();
+  }
+  if (!cameraActive) {
+    alert("Turn on your camera first — Mistress X needs to see you complete the dare.");
+    return;
   }
   localStorage.setItem(KEYS.exposureDareDone, "1");
   renderExposureDare();
