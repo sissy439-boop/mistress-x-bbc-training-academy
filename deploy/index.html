@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Mistress X BBC Training Academy - Extreme Sissy Training</title>
-<meta name="description" content="Mistress X BBC Training Academy. Extreme bussy training, chastity, edging, mantras, plug stages &amp; 24 BBC adventures for pathetic white clitty owners.">
+<meta name="description" content="Mistress X BBC Training Academy. Extreme bussy training, chastity, edging, mantras, plug stages &amp; 25 BBC Sissy Adventure Levels for pathetic white clitty owners.">
 <style>
     @keyframes sparkle {
         0%, 100% { opacity: 0.4; }
@@ -561,7 +561,8 @@
 </div>
 
 <div class="panel">
-    <h2>24 BBC Bussy Adventures - Unlock Them All</h2>
+    <h2>BBC Sissy Adventure Levels</h2>
+    <p class="panel-subtitle">25 adventures from PinkKink's guide, twisted for Superior Black Cock worship. Complete them, leak for points, get exposed.</p>
     <div id="adventures"></div>
 </div>
 
@@ -656,7 +657,8 @@ const adventures = [
   { num:21, title:"Leak Count Challenge",          desc:"Edge until you leak 5 times without orgasm. Count each leak out loud on video.", points:450 },
   { num:22, title:"Mistress Obedience Test",       desc:"Complete every task Mistress X assigns in one sitting. No breaks. Full obedience report.", points:700 },
   { num:23, title:"Permanent Denial Pledge",       desc:"Write and sign a denial contract. Read it naked on camera. Upload to training portal.", points:800 },
-  { num:24, title:"Sissy Slave Auction Exposure",  desc:"Post on Fansly/X as Mistress X's personal Calgary cumrag. Live auction yourself.", points:2000 }
+  { num:24, title:"Sissy Slave Auction Exposure",  desc:"Post on Fansly/X as Mistress X's personal Calgary cumrag. Live auction yourself.", points:2000 },
+  { num:25, title:"PinkKink Eternal Devotion",     desc:"Final level: kneel in full sissy uniform, recite all 12 mantras, edge 60min to BBC hypno, then post your graduation confession publicly. Tag Mistress X. Maximum exposure required.", points:2500 }
 ];
 
 const plugStages = [
@@ -1115,15 +1117,37 @@ function completePlugStage(stage, pts) {
 
 function renderAdventures() {
   const completed = getCompleted();
-  document.getElementById("adventures").innerHTML = adventures.map(a => {
+  const total = adventures.length;
+  const doneCount = completed.filter(n => adventures.some(a => a.num === n)).length;
+  const pct = Math.round((doneCount / total) * 100);
+  const earnedPts = adventures
+    .filter(a => completed.includes(a.num))
+    .reduce((sum, a) => sum + a.points, 0);
+
+  const header = `
+    <div class="stats-row">
+      <span class="stat-chip">Levels: <strong>${doneCount}/${total}</strong></span>
+      <span class="stat-chip">Leak Points: <strong>+${earnedPts.toLocaleString()}</strong></span>
+      <span class="stat-chip">Exposure: <strong>${doneCount >= total ? "MAXIMUM" : doneCount >= 10 ? "RISING" : "PENDING"}</strong></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <p class="next-level">${doneCount === total
+      ? "All 25 PinkKink levels conquered. Mistress X owns you completely."
+      : `${total - doneCount} adventures remain. Leak proof and get exposed.`}</p>`;
+
+  const levels = adventures.map(a => {
     const done = completed.includes(a.num);
     return `<div class="task${done ? " complete" : ""}">
-      <strong>#${a.num} ${a.title}</strong><p>${a.desc}</p>
+      <strong>Level ${a.num}: ${a.title}</strong>
+      <span class="stat-chip" style="display:inline-block; margin:0 0 8px 8px; font-size:0.85em;">+${a.points} pts</span>
+      <p>${a.desc}</p>
       ${done
-        ? "<p><em>Completed. Proof sent to Mistress X.</em></p>"
-        : `<button onclick="completeTask(${a.num}, ${a.points})">Complete +${a.points} pts</button>`}
+        ? "<p><em>Completed. Proof leaked to Mistress X. Exposure logged.</em></p>"
+        : `<button onclick="completeTask(${a.num}, ${a.points})">Complete &amp; Leak Proof (+${a.points} pts)</button>`}
     </div>`;
   }).join("");
+
+  document.getElementById("adventures").innerHTML = header + levels;
 }
 
 function completeTask(num, pts) {
@@ -1210,7 +1234,11 @@ function renderAll() {
   renderLiveCountdown();
 }
 
-renderAll();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", renderAll);
+} else {
+  renderAll();
+}
 setInterval(renderLiveCountdown, 60000);
 setInterval(renderChastity, 15000);
 </script>
